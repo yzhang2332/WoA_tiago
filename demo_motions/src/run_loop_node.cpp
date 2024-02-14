@@ -50,6 +50,7 @@
 #include <cstdlib>
 #include <yaml-cpp/yaml.h>
 
+// sample code
 
 int main(int argc, char** argv)
 {
