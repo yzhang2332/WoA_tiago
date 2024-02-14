@@ -50,7 +50,8 @@
 #include <cstdlib>
 #include <yaml-cpp/yaml.h>
 
-// sample code
+// sample code: from vim
+// sample
 
 int main(int argc, char** argv)
 {
