@@ -14,7 +14,9 @@ from pydub.playback import play
 import io
 import time
 
-openai.api_key = ''
+from pal_interaction_msgs.msg import TtsActionGoal, TtsGoal, TtsText
+
+openai.api_key = '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'
 
 class BreathingExercise:
     def __init__(self):
@@ -24,6 +26,8 @@ class BreathingExercise:
 
         # Publisher for controlling Tiago's torso height
         self.height_pub = rospy.Publisher('/torso_controller/command', JointTrajectory, queue_size=10)
+
+        self.speech_pub = rospy.Publisher('/tts/goal', TtsActionGoal, queue_size=10)
 
         # Subscribe to the torso sensor height
         self.current_height = rospy.Subscriber("/joint_states", JointState, self.joint_states_callback)
@@ -70,7 +74,26 @@ class BreathingExercise:
 
         # Publish trajectory
         self.height_pub.publish(traj)
+
+        # Publish speech
+        speech = TtsActionGoal()
+        goal = TtsGoal()
+        rawtext = TtsText()
+
+        rawtext.text = "Hello world this is testing"
+        rawtext.lang_id = "en_GB"
+
+        goal.rawtext = rawtext
+        speech.goal = goal
+
+        self.speech_pub.publish(speech)
+
+
+
         time.sleep(duration)
+
+
+        
 
     # def get_current_height(self):
     #     # In a real implementation, you should read the current height from sensors
@@ -144,7 +167,9 @@ class BreathingExercise:
     
     def text_to_speech(self, text):
         # 6 7 10
-        my_device_index = 6
+        # break: 0, 1
+        # real robot: not 6, 7, 14, 15
+        my_device_index = 16
 
         try:
             response = openai.audio.speech.create(
