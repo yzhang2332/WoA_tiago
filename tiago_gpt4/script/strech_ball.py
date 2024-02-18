@@ -13,7 +13,7 @@ import threading
 from play_motion_msgs.msg import PlayMotionAction, PlayMotionGoal
 
 
-class GetSnack:
+class CatchBall:
     def __init__(self):
         
 
@@ -143,10 +143,11 @@ class GetSnack:
     
     def run(self):
         try:
-            self.adjust_height(0.296)
-            strech_joint_angles = [0.21, 0.35, -0.2, 0.8, -1.57, 1.37, 0.0]
-            text = "Relax time now. Let's have some snacks."
-            self.speak_and_move(text, strech_joint_angles, 6)
+
+            self.adjust_height(0.19997386816795684)
+            approching_joint_angles = [0.3736315590099557, 0.20883359329334705, 0.08891803726963138, 1.3141243004491554, -1.1908934103436264, 1.0312251521012576, 0.0788524943546534]
+            text = "Let's do a fun activity. I'm going to grab the ball. And you have to catch it."
+            self.speak_and_move(text, approching_joint_angles, 6)
 
             time.sleep(2)
             # Open 
@@ -155,28 +156,27 @@ class GetSnack:
             
             # self.move_arm(strech_joint_angles, 6)
             # Move arm to pick position
-            pick_joint_angles = [0.11602674838239582, -0.6345909108407859,-0.016299100591050636, 1.3664337391581403, -1.436371130566239, 0.7749725120977005, 0.002761107620995556]  # Replace with actual angles
+            pick_joint_angles = [0.40561548267805914, -0.3022035448741352, -0.05948123254582829, 1.3154742214480972, -1.19080077863987, 1.030710119828372, 0.07775944025032792]  # Replace with actual angles
             self.move_arm(pick_joint_angles, 6)
             # Close gripper to grasp the box
-            width_close = [0.044, 0.044]
+            width_close = [0.02891444858954097, 0.02891444858954097]
             self.move_gripper(width_close, 1)
             
             # Move arm to handover position
             # self.move_arm(strech_joint_angles, 6)
             
-            offer_angles = [0.44, -0.63, -1.88, 1.37, -1.12, -0.7, 0.41]
-            text = "Here you go. They are all yours. One chocolate a day keeps the doctor away."
+            offer_angles = [1.6202375814984122, 0.8902675775544953, 0.05220939010523248, 0.017693921090674757, 1.662789255670913, - 0.10558075854249571, 0.03211794717547409]
+            text = "Go catch it!"
             self.speak_and_move(text, offer_angles, 6)
             # self.move_arm(offer_angles, 6)
-
-            time.sleep(5)
-            pick_joint_angles = [0.11602674838239582, -0.6345909108407859,-0.016299100591050636, 1.3664337391581403, -1.436371130566239, 0.7749725120977005, 0.002761107620995556]  # Replace with actual angles
-            self.move_arm(pick_joint_angles, 6)
 
             # Open 
             width_open = [0.2, 0.2]
             self.move_gripper(width_open, 1)  # Replace with actual width needed to grasp the box
-            
+
+            text = "Well done."
+            self.speak.text_to_speech(text, 1.2)
+
             strech_joint_angles = [0.21, 0.35, -0.2, 0.8, -1.57, 1.37, 0.0]
             self.move_arm(strech_joint_angles, 6)
 
@@ -186,52 +186,52 @@ class GetSnack:
             # GetSnack.move_gipper(0.1)
         except rospy.ROSInterruptException:
             pass
+    
 
 if __name__ == '__main__':
-    rospy.init_node('get_snack')
-    snack = GetSnack()
-    snack.run()
+    rospy.init_node('strech_ball')
+    ball = CatchBall()
+    ball.run()
     # try:
-    #     snack = GetSnack()
+    #     ball = CatchBall()
 
-    #     snack.adjust_height(0.296)
-    #     strech_joint_angles = [0.21, 0.35, -0.2, 0.8, -1.57, 1.37, 0.0]
-    #     text = "Relax time now. Let's have some snacks."
-    #     snack.speak_and_move(text, strech_joint_angles, 6)
+    #     ball.adjust_height(0.19997386816795684)
+    #     approching_joint_angles = [0.3736315590099557, 0.20883359329334705, 0.08891803726963138, 1.3141243004491554, -1.1908934103436264, 1.0312251521012576, 0.0788524943546534]
+    #     text = "Let's do a fun activity. I'm going to grab the ball. And you have to catch it."
+    #     ball.speak_and_move(text, approching_joint_angles, 6)
 
     #     time.sleep(2)
     #     # Open 
     #     width_open = [0.2, 0.2]
-    #     snack.move_gripper(width_open, 1)  # Replace with actual width needed to grasp the box
+    #     ball.move_gripper(width_open, 1)  # Replace with actual width needed to grasp the box
         
-    #     # snack.move_arm(strech_joint_angles, 6)
+    #     # ball.move_arm(strech_joint_angles, 6)
     #     # Move arm to pick position
-    #     pick_joint_angles = [0.11602674838239582, -0.6345909108407859,-0.016299100591050636, 1.3664337391581403, -1.436371130566239, 0.7749725120977005, 0.002761107620995556]  # Replace with actual angles
-    #     snack.move_arm(pick_joint_angles, 6)
+    #     pick_joint_angles = [0.40561548267805914, -0.3022035448741352, -0.05948123254582829, 1.3154742214480972, -1.19080077863987, 1.030710119828372, 0.07775944025032792]  # Replace with actual angles
+    #     ball.move_arm(pick_joint_angles, 6)
     #     # Close gripper to grasp the box
-    #     width_close = [0.044, 0.044]
-    #     snack.move_gripper(width_close, 1)
+    #     width_close = [0.02891444858954097, 0.02891444858954097]
+    #     ball.move_gripper(width_close, 1)
         
     #     # Move arm to handover position
-    #     # snack.move_arm(strech_joint_angles, 6)
+    #     # ball.move_arm(strech_joint_angles, 6)
         
-    #     offer_angles = [0.44, -0.63, -1.88, 1.37, -1.12, -0.7, 0.41]
-    #     text = "Here you go. They are all yours. One chocolate a day keeps the doctor away."
-    #     snack.speak_and_move(text, offer_angles, 6)
-    #     # snack.move_arm(offer_angles, 6)
-
-    #     time.sleep(5)
-    #     pick_joint_angles = [0.11602674838239582, -0.6345909108407859,-0.016299100591050636, 1.3664337391581403, -1.436371130566239, 0.7749725120977005, 0.002761107620995556]  # Replace with actual angles
-    #     snack.move_arm(pick_joint_angles, 6)
+    #     offer_angles = [1.6202375814984122, 0.8902675775544953, 0.05220939010523248, 0.017693921090674757, 1.662789255670913, - 0.10558075854249571, 0.03211794717547409]
+    #     text = "Go catch it!"
+    #     ball.speak_and_move(text, offer_angles, 6)
+    #     # ball.move_arm(offer_angles, 6)
 
     #     # Open 
     #     width_open = [0.2, 0.2]
-    #     snack.move_gripper(width_open, 1)  # Replace with actual width needed to grasp the box
-        
-    #     strech_joint_angles = [0.21, 0.35, -0.2, 0.8, -1.57, 1.37, 0.0]
-    #     snack.move_arm(strech_joint_angles, 6)
+    #     ball.move_gripper(width_open, 1)  # Replace with actual width needed to grasp the box
 
-    #     snack.go_home_position()
+    #     text = "Well done."
+    #     ball.speak.text_to_speech(text, 1.2)
+
+    #     strech_joint_angles = [0.21, 0.35, -0.2, 0.8, -1.57, 1.37, 0.0]
+    #     ball.move_arm(strech_joint_angles, 6)
+
+    #     ball.go_home_position()
 
 
 
