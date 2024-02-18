@@ -9,15 +9,6 @@ from pal_interaction_msgs.msg import TtsAction, TtsGoal
 import yaml
 import os
 
-
-# Configure your OpenAI API key here
-
-#############################################
-## IMPORTANT: REMOVE BEFORE PUSHING TO GITHUB
-#############################################
-# openai.api_key = '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'
-#############################################
-
 # Configure your OpenAI API key here
 current_dir = os.path.dirname(__file__)  # Gets the directory of the current script
 config_path = os.path.join(current_dir, '..', 'config', 'gpt_api.yaml')  # Navigate to the config.yaml file
