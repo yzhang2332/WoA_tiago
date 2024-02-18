@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<launch>
+
+  <node pkg="tiago_gpt4" type="voice_recognition_server.py" name="voice_recognition_server" output="screen">
+
+    </node>
+
+  <node pkg="tiago_gpt4" type="gpt4_server_new.py" name="gpt4_client" output="screen">
+    </node>
+
+
+</launch>
