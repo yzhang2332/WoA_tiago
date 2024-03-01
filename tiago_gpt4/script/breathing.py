@@ -27,7 +27,7 @@ class BreathingExercise:
         # Publisher for controlling Tiago's torso height
         self.height_pub = rospy.Publisher('/torso_controller/command', JointTrajectory, queue_size=10)
 
-        self.speech_pub = rospy.Publisher('/tts/goal', TtsActionGoal, queue_size=10)
+        # self.speech_pub = rospy.Publisher('/tts/goal', TtsActionGoal, queue_size=10)
 
         # Subscribe to the torso sensor height
         self.current_height = rospy.Subscriber("/joint_states", JointState, self.joint_states_callback)
@@ -91,18 +91,18 @@ class BreathingExercise:
         # Publish trajectory
         self.height_pub.publish(traj)
 
-        # Publish speech
-        speech = TtsActionGoal()
-        goal = TtsGoal()
-        rawtext = TtsText()
+        # # Publish speech
+        # speech = TtsActionGoal()
+        # goal = TtsGoal()
+        # rawtext = TtsText()
 
-        rawtext.text = "Hello world this is testing"
-        rawtext.lang_id = "en_GB"
+        # rawtext.text = "Hello world this is testing"
+        # rawtext.lang_id = "en_GB"
 
-        goal.rawtext = rawtext
-        speech.goal = goal
+        # goal.rawtext = rawtext
+        # speech.goal = goal
 
-        self.speech_pub.publish(speech)
+        # self.speech_pub.publish(speech)
 
 
 

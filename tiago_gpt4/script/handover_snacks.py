@@ -137,13 +137,16 @@ if __name__ == '__main__':
         strech_joint_angles = [0.21, 0.35, -0.2, 0.8, -1.57, 1.37, 0.0]
         text = "Relax time now. Let's have some snacks."
         snack.speak_and_move(text, strech_joint_angles, 6)
+        # Open 
+        width_open = [0.2, 0.2]
+        snack.move_gripper(width_open, 1)  # Replace with actual width needed to grasp the box
         # snack.move_arm(strech_joint_angles, 6)
         # Move arm to pick position
         pick_joint_angles = [0.11602674838239582, -0.6345909108407859,-0.016299100591050636, 1.3664337391581403, -1.436371130566239, 0.7749725120977005, 0.002761107620995556]  # Replace with actual angles
         snack.move_arm(pick_joint_angles, 6)
-        # Open 
-        width_open = [0.1, 0.1]
-        snack.move_gripper(width_open, 1)  # Replace with actual width needed to grasp the box
+        # # Open 
+        # width_open = [0.2, 0.2]
+        # snack.move_gripper(width_open, 1)  # Replace with actual width needed to grasp the box
         # Close gripper to grasp the box
         width_close = [0.044, 0.044]
         snack.move_gripper(width_close, 1)

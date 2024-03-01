@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<launch>
+
+  <!-- 1. Lock the robot head  -->
+  <node pkg="say_something" type="point_head_forward.py" name="point_head_forward" output="screen"></node>
+
+  <!-- 2. Run YOLOv5 -->
+  <include file="$(find yolov5_ros)/launch/yolov5.launch"/>
+
+  <!-- 3. Run the find_person node -->
+  <!-- <node pkg="say_something" type="find_person.py" name="find_person" output="screen"></node> -->
+
+
+</launch>

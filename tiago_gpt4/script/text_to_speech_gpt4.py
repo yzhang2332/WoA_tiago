@@ -8,7 +8,7 @@ import io
 import rospy
 
 # Configure your OpenAI API key here
-openai.api_key = ''
+openai.api_key = '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'
 
 class TTSFunction:
     def __init__(self):

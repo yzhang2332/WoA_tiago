@@ -1,7 +1,6 @@
 #! /usr/bin/env python
 
-#!/usr/bin/env python
-
+#detect the persons and the depth but not correctly (this was WiFi issue, but with Ethernet it works)
 import rospy
 import cv2
 import numpy as np
@@ -15,8 +14,8 @@ class PersonDetector:
         rospy.init_node('pal_person_detector_opencv', anonymous=True)
 
         self.bridge = CvBridge()
-        # self.hog = cv2.HOGDescriptor()
-        # self.hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
+        self.hog = cv2.HOGDescriptor()
+        self.hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
 
         # Subscribers for RGB and Depth images
         self.rgb_sub = message_filters.Subscriber('/xtion/rgb/image_raw', Image)
@@ -29,9 +28,7 @@ class PersonDetector:
         # self.detections_publisher = rospy.Publisher('~detections', Detections2d, queue_size=1)
         # self.debug_image_publisher = rospy.Publisher('~debug', Image, queue_size=1)
 
-
     def callback(self, rgb_data, depth_data):
-
         rospy.loginfo("Received RGB and Depth images")
 
         try:
@@ -41,17 +38,37 @@ class PersonDetector:
             rospy.logerr(e)
             return
 
-        cv2.imshow("RGB Image", cv_rgb_image)
-        cv2.imshow("Depth Image", cv_depth_image)
-        cv2.waitKey(1)
+        # cv2.imshow("RGB Image", cv_rgb_image)
+        # cv2.imshow("Depth Image", cv_depth_image)
+        # cv2.waitKey(1)
 
-        # # Person detection on RGB image
-        # (rects, _) = self.hog.detectMultiScale(cv_rgb_image, winStride=(4, 4), padding=(8, 8), scale=1.05)
+        # Person detection on RGB image
+        (rects, _) = self.hog.detectMultiScale(cv_rgb_image, winStride=(4, 4), padding=(8, 8), scale=1.05)
 
         # detections_msg = Detections2d()
         # detections_msg.header = rgb_data.header
 
-        # for (x, y, w, h) in rects:
+        for (x, y, w, h) in rects:
+            cv2.rectangle(cv_rgb_image, (x,y),(x+w,y+h),(0,255,0),2)
+
+            depth_roi = cv_depth_image[y:y+h, x:x+w]
+            non_zero_depths = depth_roi[depth_roi > 0]
+            if len(non_zero_depths) > 0:
+                average_depth = np.mean(non_zero_depths)
+                rospy.loginfo("Detected person at depth: {:.2f} meters".format(average_depth))
+            else:
+                rospy.loginfo("Detected person, but the depth data is not available")
+
+
+        # cv2.imshow("RGB Image", cv_rgb_image)
+        cv2.imshow("Depth Image", cv_depth_image)
+        cv2.waitKey(1)
+
+
+
+
+
+
         #     detection = Detection2d()
         #     detection.x = x
         #     detection.y = y
@@ -77,10 +94,9 @@ class PersonDetector:
         # except CvBridgeError as e:
         #     print(e)
 
-if __name__ == '__main__':
-
-    detector = PersonDetector()
+if __name__ == '__main__':    
     try:
+        detector = PersonDetector()
         rospy.spin()
     except KeyboardInterrupt:
         cv2.destroyAllWindows()
