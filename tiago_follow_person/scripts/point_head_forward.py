@@ -35,7 +35,7 @@ def control_tiago_head():
         # Publish the head trajectory command
         head_pub.publish(head_traj)
 
-        rospy.loginfo("Head trajectory command published...")
+        # rospy.loginfo("Head trajectory command published...")
 
         rate.sleep()
 
