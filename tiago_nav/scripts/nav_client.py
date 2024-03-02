@@ -49,24 +49,12 @@ class NavigationClient:
         # Create a PoseStamped goal
         pose_goal = PoseStamped()
         pose_goal.header.frame_id = "map"
-        # pose_goal.header.stamp = rospy.Time.now()
-
-        # # Set the position and orientation of the goal
-        # pose_goal.pose.position.x = 0.628
-        # pose_goal.pose.position.y = 0.462
-        # pose_goal.pose.position.z = 0.0
+        pose_goal.header.stamp = rospy.Time.now()
 
         # Set the position and orientation of the goal
         pose_goal.pose.position.x = trans[0]
         pose_goal.pose.position.y = trans[1]
         pose_goal.pose.position.z = 0.0
-
-        # Rotation: x, y, z, w
-        # pose_goal.pose.orientation = Quaternion(0.0, 0.0, 0.9936, 0.113)
-        # pose_goal.pose.orientation.x = 0.0
-        # pose_goal.pose.orientation.y = 0.0
-        # pose_goal.pose.orientation.z = 0.9936
-        # pose_goal.pose.orientation.w = 0.113
 
         pose_goal.pose.orientation.x = rot[0]
         pose_goal.pose.orientation.y = rot[1]
