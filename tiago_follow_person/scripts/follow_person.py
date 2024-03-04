@@ -53,7 +53,7 @@ class PersonFollower:
         self.max_rot_diff = 50       # pixels
 
         self.forward = 0.35          # m/s
-        self.backward = -0.3         # m/s
+        self.backward = -0.2         # m/s
         self.rot_scaling = float(1/700)
 
         self.subarr_size = 10       # sub-matrix of the depth matrix
@@ -76,6 +76,8 @@ class PersonFollower:
 
     def obstacle_dir_callback(self, msg: JointState):
         # from obstacle_checker node
+        if self.obstacle_flag:
+            return
         self.obstacle_dir = msg.position
         print(self.obstacle_dir)
         all_zeros = all(x == 0 for x in self.obstacle_dir)
@@ -127,7 +129,7 @@ class PersonFollower:
 
     def translate(self, vel):
         
-        translate_duration = 1.0    # seconds
+        translate_duration = 2.0    # seconds
         start = rospy.get_time()
         now = rospy.get_time()
 
@@ -162,25 +164,25 @@ class PersonFollower:
         print("inside the recovery function")
         print("="*20)
 
-        rospy.sleep(3.0)
+        # rospy.sleep(3.0)
         
         dir = self.obstacle_dir  # this is a list with at least 1 non-zero element
 
         # first check sides
         if dir[1] == 1:
             # rotate right
-            self.rotate(-pi/4)
+            self.rotate(-pi/8)
         if dir[3] == 1:
             # rotate left
-            self.rotate(pi/4)
+            self.rotate(pi/8)
         
         # now, move linearly
         if dir[0] == 1:
             # move backwards
-            self.translate(-0.1)
+            self.translate(-0.15)
         if dir[3] == 1:
             # move forwards
-            self.translate(0.1)
+            self.translate(0.15)
 
 
 
