@@ -4,3 +4,7 @@
 [submodule "detection_msgs"]
 	path = detection_msgs
 	url = https://github.com/mats-robotics/detection_msgs.git
+[submodule "ultralytics_ros"]
+	path = ultralytics_ros
+	url = https://github.com/Alpaca-zip/ultralytics_ros.git
+	branch = noetic-devel
