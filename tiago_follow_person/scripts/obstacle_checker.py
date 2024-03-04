@@ -10,19 +10,24 @@ import tf
 import tf2_ros
 from geometry_msgs.msg import TransformStamped
 from scipy.ndimage import rotate
+from sensor_msgs.msg import JointState
 
 
-class CostmapChecker:
+class ObstacleChecker:
 
     def __init__(self):
 
-        rospy.init_node('local_costmap_listener', anonymous=True)
+        rospy.init_node('obstacle_checker', anonymous=True)
         rospy.Subscriber("/move_base/local_costmap/costmap", OccupancyGrid, self.callback)
 
-        self.listener = tf.TransformListener()
-        # rospy.sleep(1)
-        # print("Sleeping for 1 second ...")
+        self.obstacle_dir_pub = rospy.Publisher('/obstacle_dir', JointState, queue_size=1)
 
+        self.listener = tf.TransformListener()
+        rospy.sleep(1)
+        print("Sleeping for 1 second ...")
+
+    def run(self):
+        rospy.spin()
 
     
     def publish_static_transformation(self, parent_frame_id, child_frame_id, translation, rotation):
@@ -64,9 +69,41 @@ class CostmapChecker:
         return rot_euler
     
 
+    def find_directions(self, map: np.ndarray) -> list:
+        
+        directions = [0, 0, 0, 0]
+        length = map.shape[0]
+        width = int(length / 4)
+
+        # anti-clockwise definition:
+        # 1 - front, 2 - left, 3 - back, 4 - right
+
+        # check front
+        front_arr = map[0:width, 0:length]
+        if np.count_nonzero(front_arr == 1):
+            directions[0] = 1
+
+        # check left
+        left_arr = map[0:length, 0:width]
+        if np.count_nonzero(left_arr == 1):
+            directions[1] = 1
+
+        # check back
+        back_arr = map[length-width:length, 0:length]
+        if np.count_nonzero(back_arr == 1):
+            directions[2] = 1
+
+        # check right
+        right_arr = map[0:length, length-width:length]
+        if np.count_nonzero(right_arr == 1):
+            directions[3] = 1
+
+        return directions
+    
+
     def callback(self, data):
 
-        rospy.loginfo("Received local costmap data")
+        # rospy.loginfo("Received local costmap data")
 
         # Example: Check a specific cell
         # x, y = 1.0, 1.0  # coordinatesn to check (in the robot's frame), in m
@@ -81,25 +118,25 @@ class CostmapChecker:
         origin_position = origin.position
         q = origin.orientation
         # print(q)
-        # rot_euler = tf_conversions.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])
+        rot_euler = tf_conversions.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])
         # print(rot_euler)
 
         # publish transformation of {local_costmap} in {odom}
         self.publish_static_transformation('odom', 'local_costmap', origin_position, q)
-        print("Published static transform!")
+        # print("Published static transform!")
 
-        print("resolution = %.10f" % resolution)
-        print("height = %.3f" % height)
-        print("width = %.3f" % width)
-        print("origin position: x = %.3f, y = %.3f" % (origin_position.x, origin_position.y))
+        # print("resolution = %.10f" % resolution)
+        # print("height = %.3f" % height)
+        # print("width = %.3f" % width)
+        # print("origin position: x = %.3f, y = %.3f" % (origin_position.x, origin_position.y))
         # print("origin orientation: x = %.3f, y = %.3f" % (origin_orientation.x, origin_orientation.y))
 
         center_px = 79
 
-        margin = 1.0   # in m
+        margin = 0.8   # in m
         margin_px = round(margin / resolution)   # in pixels of the matrix
         window_width = margin_px * 2
-        print("margin_px = %d, window_width = %d" % (margin_px, window_width))
+        # print("margin_px = %d, window_width = %d" % (margin_px, window_width))
 
         values = []
 
@@ -116,14 +153,14 @@ class CostmapChecker:
                 # else:
                 #     rospy.loginfo("Coordinates out of bounds")
 
-        # Convert the tuple to a NumPy array
+        # Convert the tuple to a NumPy array (also convert all 100 -> 1)
         values_np = np.array(values, dtype=np.uint8) / 100
 
         # Reshape the array to 2D - 80 rows, 80 columns
         values_mat = values_np.reshape(window_width, window_width)
 
-        count_before = np.count_nonzero(values_mat == 1)
-        print("count_before = %d" % count_before)
+        # count_before = np.count_nonzero(values_mat == 1)
+        # print("count_before = %d" % count_before)
 
         # ORIGINAL -> EROSION -> DILATION
         
@@ -132,7 +169,7 @@ class CostmapChecker:
         kernel = np.ones((kernel_size, kernel_size), np.uint8) 
         # threshold = floor(kernel_size**2 / 3)
         threshold = 10
-        print(threshold)
+        # print(threshold)
         
         # The first parameter is the original image, 
         # kernel is the matrix with which image is 
@@ -150,28 +187,51 @@ class CostmapChecker:
 
         # rotate image
         rot_euler = self.get_transformation()
-        print(rot_euler)
+        # print(rot_euler)
         yaw_deg = rot_euler[2]/pi*180 - 180
-        print(yaw_deg)
+        # print(yaw_deg)
 
-        img_dilation2 = rotate(img_dilation, yaw_deg, reshape=False, mode='reflect')
+        rotated_img = rotate(img_dilation, yaw_deg, reshape=False, mode='reflect')
+        rotated_img = np.round(rotated_img)
 
-        count_after = np.count_nonzero(img_dilation == 1)
-        print("count_after = %d" % count_after)
+        # publish the directions vector
+        directions = self.find_directions(rotated_img)
+        dir_msg = JointState()
+        dir_msg.position = directions
+        self.obstacle_dir_pub.publish(dir_msg)
 
-        if count_after > 0:
-            print("OBSTACLE DETECTED!!!")
-        else:
-            print("ALL CLEAR!!!!")
+
+        # cv2.imshow('Dilation', img_dilation2) 
+        # cv2.imshow('Dilation', rotated_img) 
+        # cv2.waitKey(0) 
+
+
+        # count_after = np.count_nonzero(img_dilation == 1)
+        # count_after = np.count_nonzero(rotated_img == 1)
+        # print("count_after = %d" % count_after)
+
+        # if count_after > 0:
+        #     # obstacle detected
+        #     # print("OBSTACLE DETECTED!!!")
+        #     col_flag = JointState()
+        #     col_flag.data = True
+        #     self.obstacle_flag_pub.publish(col_flag)
+
+        #     directions = self.find_directions(rotated_img)
+        #     self.recover_from_obstacle(directions)
+
+        # else:
+        #     # all clear
+        #     # print("ALL CLEAR!!!!")
+        #     col_flag = Bool()
+        #     col_flag.data = False
+        #     self.obstacle_flag_pub.publish(col_flag)
+
         
-        print(img_dilation2.shape)
+        # print(img_dilation2.shape)
 
         # cv2.imshow('Input', values_mat) 
         # cv2.imshow('Erosion', img_erosion) 
-            
-
-        cv2.imshow('Dilation', img_dilation2) 
-        cv2.waitKey(0) 
         
 
         # # Convert coordinates to cell index
@@ -196,7 +256,7 @@ class CostmapChecker:
 
 
 
-def erode(image, kernel, threshold):
+def erode(image: np.ndarray, kernel: np.ndarray, threshold):
 
     kernel_height, kernel_width = kernel.shape
     image_height, image_width = image.shape
@@ -233,8 +293,10 @@ def erode(image, kernel, threshold):
 def main():
 
     # rospy.init_node('local_costmap_listener', anonymous=True)
-    checker = CostmapChecker()
-    rospy.spin()
+    checker = ObstacleChecker()
+    checker.run()
+
+    # rospy.spin()
 
 
 

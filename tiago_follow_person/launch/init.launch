@@ -8,10 +8,13 @@
   <!-- 2. Run YOLOv5 -->
   <include file="$(find yolov5_ros)/launch/yolov5.launch"/>
 
-  <!-- 3. Run the find_person node -->
+  <!-- 3. Run the follow_person node -->
+  <node pkg="tiago_follow_person" type="obstacle_checker.py" name="obstacle_checker" output="screen"></node>
+
+  <!-- 4. Run the find_person node -->
   <node pkg="tiago_follow_person" type="find_person.py" name="person_finder" output="screen"></node>
 
-  <!-- 4. Run the follow_person node -->
+  <!-- 5. Run the follow_person node -->
   <node pkg="tiago_follow_person" type="follow_person.py" name="person_follower" output="screen"></node>
 
 

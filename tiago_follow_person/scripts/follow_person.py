@@ -3,7 +3,7 @@
 import rospy
 import cv2
 import numpy as np
-# import math
+from math import pi
 # import time
 
 from sensor_msgs.msg import Image
@@ -24,21 +24,25 @@ class PersonFollower:
         self.bridge = CvBridge()
         self.depth_image_sub = rospy.Subscriber("/xtion/depth/image_raw", Image, self.depth_image_callback)
         self.person_target_sub = rospy.Subscriber("/pixel_to_track", JointState, self.person_target_callback)
-        self.follow_flag_sub = rospy.Subscriber("/follow_person_flag", Bool, self.follow_flag_callback)
         self.pub_cmd = rospy.Publisher('/mobile_base_controller/cmd_vel', Twist, queue_size=1)
+
+        self.follow_flag_sub = rospy.Subscriber("/follow_person_flag", Bool, self.follow_flag_callback)
+        self.obstacle_dir_sub = rospy.Subscriber("/obstacle_dir", JointState, self.obstacle_dir_callback)
 
         self._hz = rospy.get_param('~hz', 10)
         self._forward_rate = rospy.get_param('~forward_rate', 0.1)
         self._backward_rate = rospy.get_param('~backward_rate', 0.1)
         self._rotation_rate = rospy.get_param('~rotation_rate', 0.1)
 
-        self.follow_flag = False
+        self.follow_flag = True               # this listens to the master file
+        self.obstacle_dir = [0, 0, 0, 0]      # this listens to the obstacle_checker node
+        self.obstacle_flag = False
 
         self.depth_matrix = None
         self.person_loc = None
 
         self.zero_depth_count = 0
-        self.count_thres = 20
+        self.count_thres = 15
 
         self._linear = 0
         self._angular = 0
@@ -65,8 +69,22 @@ class PersonFollower:
         # self.dist_tol = 0.15         # sensor noise
 
 
-    def follow_flag_callback(self, msg):
+    def follow_flag_callback(self, msg: Bool):
+        # from master file
         self.follow_flag = msg.data
+
+
+    def obstacle_dir_callback(self, msg: JointState):
+        # from obstacle_checker node
+        self.obstacle_dir = msg.position
+        print(self.obstacle_dir)
+        all_zeros = all(x == 0 for x in self.obstacle_dir)
+        if all_zeros:
+            self.obstacle_flag = False
+        else:
+            self.obstacle_flag = True
+            self.recover_from_obstacle()
+            self.obstacle_flag = False
 
 
     def person_target_callback(self, msg):
@@ -100,13 +118,73 @@ class PersonFollower:
             rospy.loginfo("NO PERMISSION!")
 
 
-    def process_data(self):
+    def get_twist(self, linear, angular):
+        twist = Twist()
+        twist.linear.x = linear
+        twist.angular.z = angular
+        return twist
+    
 
-        def _get_twist(linear, angular):
-            twist = Twist()
-            twist.linear.x = linear
-            twist.angular.z = angular
-            return twist
+    def translate(self, vel):
+        
+        translate_duration = 1.0    # seconds
+        start = rospy.get_time()
+        now = rospy.get_time()
+
+        diff = now-start
+        while diff < translate_duration:
+            cmd = self.get_twist(vel, 0.0)
+            self.pub_cmd.publish(cmd)
+            now = rospy.get_time()
+            diff = now-start
+    
+
+    def rotate(self, angle):
+
+        turn_duration = 2.0                         # seconds
+        buffer = 0.0           # seconds
+        turn_rate = angle / turn_duration   # rad/s [clockwise]
+
+        start = rospy.get_time()
+        now = rospy.get_time()
+
+        diff = now-start
+        while diff < turn_duration + buffer:
+            cmd = self.get_twist(0.0, turn_rate)
+            self.pub_cmd.publish(cmd)
+            now = rospy.get_time()
+            diff = now-start
+
+
+    def recover_from_obstacle(self):
+
+        print("="*20)
+        print("inside the recovery function")
+        print("="*20)
+
+        rospy.sleep(3.0)
+        
+        dir = self.obstacle_dir  # this is a list with at least 1 non-zero element
+
+        # first check sides
+        if dir[1] == 1:
+            # rotate right
+            self.rotate(-pi/4)
+        if dir[3] == 1:
+            # rotate left
+            self.rotate(pi/4)
+        
+        # now, move linearly
+        if dir[0] == 1:
+            # move backwards
+            self.translate(-0.1)
+        if dir[3] == 1:
+            # move forwards
+            self.translate(0.1)
+
+
+
+    def process_data(self):
 
         if self.depth_matrix is not None and self.person_loc is not None:
 
@@ -116,10 +194,10 @@ class PersonFollower:
             self.person_depth = self.get_mean_of_subarray(int(self.person_loc[0]), int(self.person_loc[1]))
             self.person_depth = self.person_depth / 1000
             diff_px = 320 - self.person_loc[0]
-            rospy.loginfo('person_loc: x = {}, y = {}, depth = {} m, diff_px = {}'.format(int(self.person_loc[0]), 
-                                                                                          int(self.person_loc[1]), 
-                                                                                          self.person_depth,
-                                                                                          diff_px))
+            # rospy.loginfo('person_loc: x = {}, y = {}, depth = {} m, diff_px = {}'.format(int(self.person_loc[0]), 
+            #                                                                               int(self.person_loc[1]), 
+            #                                                                               self.person_depth,
+            #                                                                               diff_px))
             # set linear velocity (assuming non-zero depth)
             if self.person_depth > self.max_dist:
                 self._linear = self.forward         # forward
@@ -159,8 +237,20 @@ class PersonFollower:
             # if self._angular > 0.0:
             #     self._linear = 0.0
                 
-            twist = _get_twist(self._linear, self._angular)
-            self.pub_cmd.publish(twist)
+            twist = self.get_twist(self._linear, self._angular)
+            
+            # 2 conditions to satisfy before sending base vel command
+            # 1. There's no reported obstacles nearby from the collision_checker node
+            # 2. The master file is allowing this to run
+            if not self.obstacle_flag and self.follow_flag:
+                rospy.loginfo("All clear, sending base command now!")
+                self.pub_cmd.publish(twist)
+            # else:
+            #     if self.obstacle_flag:
+            #         print("Obstacle detected!")
+            #     if not self.follow_flag:
+            #         print("Master file not permitting!")
+
 
 
     def get_mean_of_subarray(self, x, y):
@@ -205,7 +295,7 @@ class PersonFollower:
 
     # def process_data(self):
 
-    #     def _get_twist(linear, angular):
+    #     def get_twist(linear, angular):
     #         twist = Twist()
     #         twist.linear.x = linear
     #         twist.angular.z = angular
@@ -238,7 +328,7 @@ class PersonFollower:
     #         else:
     #             self._angular = 0.0
                 
-    #         twist = _get_twist(self._linear, self._angular)
+    #         twist = get_twist(self._linear, self._angular)
     #         self.pub_cmd.publish(twist)
 
  
