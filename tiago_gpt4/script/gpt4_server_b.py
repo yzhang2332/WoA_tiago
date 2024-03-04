@@ -71,7 +71,7 @@ class GPT4Client:
                 input= text
                 )
 
-            audio_response = response.content
+            audio_response = response.contenprocess_with_gpt4t
             # print(type(audio_response))
             # Convert MP3 bytes to audio segment
             audio_segment = AudioSegment.from_file(io.BytesIO(audio_response), format="mp3")
@@ -97,7 +97,7 @@ class GPT4Client:
             wav_data = wav_io.read()
             self.stream.write(wav_data)
             # print("speaking")  
-            
+            process_with_gpt4
             # Open a stream with the proper configuration for playback
             # self.stream = p.open(format=p.get_format_from_width(2),  # Assuming 16-bit PCM
             #                 channels=1,  # Assuming mono audio

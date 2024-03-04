@@ -24,9 +24,12 @@ openai.api_key = config['api_key']
 class GenerationFuncion():
     def __init__(self):
         self.speak = TTSFunction()
+        self.follow_me = FollowMe()
+        self.show_around = ShowAround()
 
     def process_with_gpt4(self, text):
         try:
+            rospy.loginfo("Start generate by gpt")
             keyword_list= ['no_action', 'stress_ball', 'breathing_exercise', 'provide_snack', 'schedule_meeting', 'navigate_to_meeting_room_A', 'navigate_to_meeting_room_B', 'navigate_to_kitchen', 'say_hi_wave_hand']
             gpt_response = openai.chat.completions.create(
                 model="gpt-4",  # Use the model identifier for GPT-4. Adjust if you're using a specific variant.
@@ -44,11 +47,11 @@ class GenerationFuncion():
                             For example: Sure, come with me. *navigate_to_meeting_room_a\
                            "}],
             )
-            
-            follow_me = FollowMe()
-            show_around = ShowAround()
+            rospy.loginfo("GPT responsed")
+        
 
             gpt_response = gpt_response.choices[0].message.content
+            rospy.loginfo("GPT responsed")
             robot_response, action_keyword = gpt_response.split("*")
             rospy.loginfo(f"Robot response is: {robot_response}")
             rospy.loginfo(f"Action is: {action_keyword}")
@@ -80,19 +83,19 @@ class GenerationFuncion():
                     self.speak.text_to_speech(schedule, 1.2)
                 elif action_keyword == "navigate_to_meeting_room_A":
                     rospy.loginfo("Show meeting room A")
-                    follow_me.run()
+                    self.follow_me.run()
 
-                    show_around.run()
+                    self.show_around.run()
                 elif action_keyword == "navigate_to_meeting_room_B":
                     rospy.loginfo("Show meeting room B")
-                    follow_me.run()
+                    self.follow_me.run()
 
-                    show_around.run()
+                    self.show_around.run()
                 elif action_keyword == "navigate_to_kitchen":
                     rospy.loginfo("Show kitchen")
-                    follow_me.run()
+                    self.follow_me.run()
 
-                    show_around.run()
+                    self.show_around.run()
                 else:
                     rospy.loginfo("Wrong keyword.")
 

@@ -19,6 +19,7 @@ from text_to_speech_gpt4 import TTSFunction
 import time
 from create_calendar import create_event_calendar
 from Showing_Events_Caleder import Showing_Events_Calender
+from flask_app import run_app_in_thread, set_signal_flag
 
 
 # Configure your OpenAI API key here
@@ -27,6 +28,9 @@ config_path = os.path.join(current_dir, '..', 'config', 'gpt_api.yaml')  # Navig
 with open(config_path, 'r') as file:
     config = yaml.safe_load(file)
 openai.api_key = config['api_key']
+
+# initial flask app
+run_app_in_thread()
 
 
 class VoiceRecognitionServer:
@@ -42,7 +46,7 @@ class VoiceRecognitionServer:
 
         # Audio recording parameters
         self.sample_rate = 16000 # 16000 44100
-        self.threshold = 3  # Silence detection threshold
+        self.threshold = 3  # SilencTruee detection threshold
         self.silence_duration = 1  # Seconds of silence to consider the speaker has stopped
         self.stream = None
         self.last_flag_timestamp = 0
@@ -124,10 +128,16 @@ class VoiceRecognitionServer:
         # self.stream = sd.InputStream(callback=callback, samplerate=self.sample_rate, device=device_index, dtype='float32')
         with self.stream:
             print("Recording started. Speak into the microphone.")
+            
+            set_signal_flag(True)
+
             while self.stream.active:
                 sd.sleep(10)
 
         rospy.loginfo("Recording stopped.")
+
+        set_signal_flag(False)
+        
         return np.concatenate(recorded_data, axis=0) 
     
     
