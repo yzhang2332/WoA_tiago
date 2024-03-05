@@ -6,20 +6,18 @@ from play_motion_msgs.msg import PlayMotionAction, PlayMotionGoal
 from sensor_msgs.msg import JointState
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from std_msgs.msg import Float64
-# from text_to_speech_gpt4 import TTSFunction
+from woa_tiago.tiago_gpt4.script.sim_script.sim_text_to_speech_gpt4 import TTSFunction
 import time
 from control_msgs.msg import FollowJointTrajectoryAction, FollowJointTrajectoryGoal
 import threading
 from play_motion_msgs.msg import PlayMotionAction, PlayMotionGoal
 
-from pal_interaction_msgs.msg import TtsAction, TtsGoal
 
-
-class GetSnack:
+class CatchBall:
     def __init__(self):
         
 
-        # self.speak = TTSFunction()
+        self.speak = TTSFunction()
 
         # Publisher for controlling Tiago's torso height
         self.height_pub = rospy.Publisher('/torso_controller/command', JointTrajectory, queue_size=10)
@@ -39,9 +37,6 @@ class GetSnack:
         self.home_client = actionlib.SimpleActionClient("play_motion", PlayMotionAction)
         self.home_client.wait_for_server()
 
-        self.tts_client = actionlib.SimpleActionClient('/tts', TtsAction)
-        self.tts_client.wait_for_server()
-        rospy.loginfo("Tts server connected.")
 
         rospy.wait_for_message("joint_states", JointState)
         rospy.sleep(3.0)
@@ -52,6 +47,7 @@ class GetSnack:
         if "torso_lift_joint" in msg.name:
             index = msg.name.index("torso_lift_joint")
             self.current_torso_height = msg.position[index]
+    
 
     def adjust_height(self, target_height):
         rate = rospy.Rate(10)
@@ -78,16 +74,6 @@ class GetSnack:
         # Publish trajectory
         self.height_pub.publish(traj)
         time.sleep(duration)
-
-
-    def tts(self, text):
-        rospy.loginfo("Inside the tts function!!!")
-        # Create a goal to say our sentence
-        goal = TtsGoal()
-        goal.rawtext.text = text
-        goal.rawtext.lang_id = "en_GB"
-        # Send the goal and wait
-        self.tts_client.send_goal_and_wait(goal)
 
     
     def move_arm(self, joint_angles, t):
@@ -139,7 +125,7 @@ class GetSnack:
             rospy.loginfo("Gripper did not complete before the timeout.")
     
     def speak_and_move(self, text, joint_angles, t):
-        speak_thread = threading.Thread(target=self.tts, args=(text,))
+        speak_thread = threading.Thread(target=self.speak, args=(text, 1.2))
         speak_thread.start()
 
         arm_thread = threading.Thread(target=self.move_arm(joint_angles, t))
@@ -159,10 +145,11 @@ class GetSnack:
     
     def run(self):
         try:
-            self.adjust_height(0.296)
-            strech_joint_angles = [0.21, 0.19, -0.2, 1.32, -1.57, 1.37, 0.0]
-            text = "Relax time now. Let's have some snacks."
-            self.speak_and_move(text, strech_joint_angles, 6)
+
+            self.adjust_height(0.19997386816795684)
+            approching_joint_angles = [0.3736315590099557, 0.20883359329334705, 0.08891803726963138, 1.3141243004491554, -1.1908934103436264, 1.0312251521012576, 0.0788524943546534]
+            text = "Let's do a fun activity. I'm going to grab the ball. And you have to catch it."
+            self.speak_and_move(text, approching_joint_angles, 6)
 
             time.sleep(2)
             # Open 
@@ -171,38 +158,28 @@ class GetSnack:
             
             # self.move_arm(strech_joint_angles, 6)
             # Move arm to pick position
-            pre_grasp_angles = [0.116, -0.42,-0.0163, 1.367, -1.436, 0.775, 0.003]
-            self.move_arm(pre_grasp_angles, 6)
-            rospy.sleep(0.5)
-
-            pick_joint_angles = [0.116, -0.635,-0.0163, 1.367, -1.436, 0.775, 0.003] 
-            self.move_arm(pick_joint_angles, 1)
+            pick_joint_angles = [0.40561548267805914, -0.3022035448741352, -0.05948123254582829, 1.3154742214480972, -1.19080077863987, 1.030710119828372, 0.07775944025032792]  # Replace with actual angles
+            self.move_arm(pick_joint_angles, 6)
             # Close gripper to grasp the box
-            width_close = [0.044, 0.044]
-            width_close = [0.02, 0.02]
+            width_close = [0.02891444858954097, 0.02891444858954097]
             self.move_gripper(width_close, 1)
             
             # Move arm to handover position
             # self.move_arm(strech_joint_angles, 6)
             
-            offer_angles = [0.44, -0.63, -1.88, 1.37, -1.12, -0.7, 0.41]
-            text = "Here you go. They are all yours. One chocolate a day keeps the doctor away."
+            offer_angles = [1.6202375814984122, 0.8902675775544953, 0.05220939010523248, 0.017693921090674757, 1.662789255670913, - 0.10558075854249571, 0.03211794717547409]
+            text = "Go catch it!"
             self.speak_and_move(text, offer_angles, 6)
             # self.move_arm(offer_angles, 6)
-
-            time.sleep(5)
-            back_angles = [0.116, -0.34,-0.0163, 1.71, -1.436, 0.775, 0.003]
-            self.move_arm(back_angles, 4)
-            rospy.sleep(0.5)
-
-            pick_joint_angles = [0.116, -0.635,-0.0163, 1.367, -1.436, 0.775, 0.003]
-            self.move_arm(pick_joint_angles, 1)
 
             # Open 
             width_open = [0.2, 0.2]
             self.move_gripper(width_open, 1)  # Replace with actual width needed to grasp the box
-            
-            strech_joint_angles = [0.21, 0.19, -0.2, 1.32, -1.57, 1.37, 0.0]
+
+            text = "Well done."
+            self.tts(text)
+
+            strech_joint_angles = [0.21, 0.35, -0.2, 0.8, -1.57, 1.37, 0.0]
             self.move_arm(strech_joint_angles, 6)
 
             self.go_home_position()
@@ -211,8 +188,9 @@ class GetSnack:
             # GetSnack.move_gipper(0.1)
         except rospy.ROSInterruptException:
             pass
+    
 
 if __name__ == '__main__':
-    rospy.init_node('get_snack')
-    snack = GetSnack()
-    snack.run()
+    rospy.init_node('strech_ball')
+    ball = CatchBall()
+    ball.run()

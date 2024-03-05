@@ -2,20 +2,16 @@
 import rospy
 from std_msgs.msg import String
 import openai
-# from text_to_speech_gpt4 import TTSFunction
+from woa_tiago.tiago_gpt4.script.sim_script.sim_text_to_speech_gpt4 import TTSFunction
 import yaml
 import os
-from create_calendar import create_event_calendar
-from Showing_Events_Caleder import Showing_Events_Calender
-from breathing import BreathingExercise
-from handover_snacks import GetSnack
-from strech_ball import CatchBall
-from def_actions import play_action
-from customized_gesture import FollowMe, ShowAround
-
-from pal_interaction_msgs.msg import TtsAction, TtsGoal
-import actionlib
-
+from woa_tiago.tiago_gpt4.script.sim_script.sim_create_calendar import create_event_calendar
+from woa_tiago.tiago_gpt4.script.sim_script.sim_Showing_Events_Caleder import Showing_Events_Calender
+from woa_tiago.tiago_gpt4.script.sim_script.sim_breathing import BreathingExercise
+from woa_tiago.tiago_gpt4.script.sim_script.sim_handover_snacks import GetSnack
+from woa_tiago.tiago_gpt4.script.sim_script.sim_strech_ball import CatchBall
+from woa_tiago.tiago_gpt4.script.sim_script.sim_def_actions import play_action
+from woa_tiago.tiago_gpt4.script.sim_script.sim_customized_gesture import FollowMe, ShowAround
 
 
 # Configure your OpenAI API key here
@@ -27,23 +23,10 @@ openai.api_key = config['api_key']
 
 class GenerationFuncion():
     def __init__(self):
-        # self.speak = TTSFunction()
+        self.speak = TTSFunction()
         self.follow_me = FollowMe()
         self.show_around = ShowAround()
 
-        self.tts_client = actionlib.SimpleActionClient('/tts', TtsAction)
-        self.tts_client.wait_for_server()
-        rospy.loginfo("Tts server connected.")
-
-    def tts(self, text):
-        rospy.loginfo("Inside the tts function!!!")
-        # Create a goal to say our sentence
-        goal = TtsGoal()
-        goal.rawtext.text = text
-        goal.rawtext.lang_id = "en_GB"
-        # Send the goal and wait
-        self.tts_client.send_goal_and_wait(goal)
-    
     def process_with_gpt4(self, text):
         try:
             rospy.loginfo("Start generate by gpt")
@@ -72,8 +55,7 @@ class GenerationFuncion():
             robot_response, action_keyword = gpt_response.split("*")
             rospy.loginfo(f"Robot response is: {robot_response}")
             rospy.loginfo(f"Action is: {action_keyword}")
-            self.tts(robot_response)
-            # self.speak.text_to_speech(robot_response, 1.0)
+            self.speak.text_to_speech(robot_response, 1.0)
             if action_keyword != "no_action":
                 if action_keyword == "breathing_exercise":
                     rospy.loginfo("Doing Breathing Exercises")
@@ -98,8 +80,7 @@ class GenerationFuncion():
                     # todo: turn around
                     schedule = Showing_Events_Calender()
                     rospy.loginfo(schedule)
-                    self.tts(schedule)
-                    # self.speak.text_to_speech(schedule, 1.2)
+                    self.speak.text_to_speech(schedule, 1.2)
                 elif action_keyword == "navigate_to_meeting_room_A":
                     rospy.loginfo("Show meeting room A")
                     self.follow_me.run()

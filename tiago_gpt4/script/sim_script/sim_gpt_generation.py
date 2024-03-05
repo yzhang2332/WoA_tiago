@@ -2,9 +2,8 @@
 import rospy
 from std_msgs.msg import String
 import openai
-# from text_to_speech_gpt4 import TTSFunction
+from woa_tiago.tiago_gpt4.script.sim_script.sim_text_to_speech_gpt4 import TTSFunction
 from actionlib import SimpleActionClient
-from pal_interaction_msgs.msg import TtsAction, TtsGoal
 
 import yaml
 import os
@@ -19,12 +18,7 @@ openai.api_key = config['api_key']
 
 class GenerationFuncion():
     def __init__(self):
-        # self.speak = TTSFunction()
-
-        self.client = SimpleActionClient('/tts', TtsAction)
-        self.client.wait_for_server()
-        rospy.loginfo("Tts connected!")
-        self.goal = TtsGoal()
+        self.speak = TTSFunction()
 
     def process_with_gpt4(self, text):
         try:
@@ -36,10 +30,7 @@ class GenerationFuncion():
             response = gpt_response.choices[0].message.content
             # self.speak.text_to_speech(response, 1.0)
 
-            self.goal.rawtext.text = response
-            self.goal.rawtext.lang_id = "en_GB"
-            # Send the goal and wait
-            self.client.send_goal_and_wait(self.goal)
+            self.speak(response)
 
             rospy.loginfo(f"GPT response is: {response}")
             return response

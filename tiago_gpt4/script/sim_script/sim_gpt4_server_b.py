@@ -7,7 +7,7 @@ from std_msgs.msg import String
 # from pydub.playback import play
 # import io
 # from text_to_speech_gpt4 import TTSFunction
-from gpt_generation import GenerationFuncion
+from woa_tiago.tiago_gpt4.script.sim_script.sim_gpt_generation_b import GenerationFuncion
 import time
 
 # Configure your OpenAI API key here
@@ -44,7 +44,7 @@ class GPT4Client:
 
         # Publish GPT-4's response
         self.publisher.publish(response)
-
+    
 
 def main():
     gpt4_client = GPT4Client()

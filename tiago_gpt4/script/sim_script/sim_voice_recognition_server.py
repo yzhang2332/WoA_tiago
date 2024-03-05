@@ -11,21 +11,15 @@ import sys
 import yaml
 import os
 from nltk.tokenize import word_tokenize
-from breathing import BreathingExercise
-from handover_snacks import GetSnack
-from strech_ball import CatchBall
-from def_actions import play_action
-# from text_to_speech_gpt4 import TTSFunction
+from woa_tiago.tiago_gpt4.script.sim_script.sim_breathing import BreathingExercise
+from woa_tiago.tiago_gpt4.script.sim_script.sim_handover_snacks import GetSnack
+from woa_tiago.tiago_gpt4.script.sim_script.sim_strech_ball import CatchBall
+from woa_tiago.tiago_gpt4.script.sim_script.sim_def_actions import play_action
+from woa_tiago.tiago_gpt4.script.sim_script.sim_text_to_speech_gpt4 import TTSFunction
 import time
-from create_calendar import create_event_calendar
-from Showing_Events_Caleder import Showing_Events_Calender
-from flask_app import run_app_in_thread, set_signal_flag
-
-
-from pal_interaction_msgs.msg import TtsAction, TtsGoal
-import actionlib
-
-
+from woa_tiago.tiago_gpt4.script.sim_script.sim_create_calendar import create_event_calendar
+from woa_tiago.tiago_gpt4.script.sim_script.sim_Showing_Events_Caleder import Showing_Events_Calender
+from woa_tiago.tiago_gpt4.script.sim_script.sim_customized_gesture import FollowMe, ShowAround
 
 
 # Configure your OpenAI API key here
@@ -34,9 +28,6 @@ config_path = os.path.join(current_dir, '..', 'config', 'gpt_api.yaml')  # Navig
 with open(config_path, 'r') as file:
     config = yaml.safe_load(file)
 openai.api_key = config['api_key']
-
-# initial flask app
-run_app_in_thread()
 
 
 class VoiceRecognitionServer:
@@ -52,29 +43,16 @@ class VoiceRecognitionServer:
 
         # Audio recording parameters
         self.sample_rate = 16000 # 16000 44100
-        self.threshold = 3  # SilencTruee detection threshold
+        self.threshold = 3  # Silence detection threshold
         self.silence_duration = 1  # Seconds of silence to consider the speaker has stopped
         self.stream = None
         self.last_flag_timestamp = 0
         self.first_conversation = True
         self.action_flag = False
-        # self.speak = TTSFunction()
+        self.speak = TTSFunction()
         # self.conv_break = False
         
-        self.tts_client = actionlib.SimpleActionClient('/tts', TtsAction)
-        self.tts_client.wait_for_server()
-        rospy.loginfo("Tts server connected.")
 
-        
-    def tts(self, text):
-        rospy.loginfo("Inside the tts function!!!")
-        # Create a goal to say our sentence
-        goal = TtsGoal()
-        goal.rawtext.text = text
-        goal.rawtext.lang_id = "en_GB"
-        # Send the goal and wait
-        self.tts_client.send_goal_and_wait(goal)
-    
 
     def flag_callback(self, msg):
         # Update the last flag timestamp when a new message is received
@@ -147,16 +125,10 @@ class VoiceRecognitionServer:
         # self.stream = sd.InputStream(callback=callback, samplerate=self.sample_rate, device=device_index, dtype='float32')
         with self.stream:
             print("Recording started. Speak into the microphone.")
-            
-            set_signal_flag(True)
-
             while self.stream.active:
                 sd.sleep(10)
 
         rospy.loginfo("Recording stopped.")
-
-        set_signal_flag(False)
-        
         return np.concatenate(recorded_data, axis=0) 
     
     
@@ -202,11 +174,163 @@ class VoiceRecognitionServer:
                     text = text.replace("Hey, Tiago", "").strip()
                     corrected_text = self.check_grammar(text)
                     rospy.loginfo(f"You are saying: {corrected_text}")
-                    self.text_pub.publish(corrected_text)
-                    rospy.loginfo("Go to gpt")
-                    # self.conv_break = False
-                    self.first_conversation = False
-                    self.action_flag = False                      
+
+                    # Normalize the text
+                    normalized_text = corrected_text.lower()
+                    # Tokenize the text
+                    tokens = set(word_tokenize(normalized_text))
+
+                    follow_me = FollowMe()
+                    show_around = ShowAround()
+
+                    
+                    found_categories = []
+                    for category, keywords in categories.items():
+                        for keyword in keywords:
+                            if keyword.lower() in tokens:
+                                if category not in found_categories:
+                                    found_categories.append(category)
+                                    rospy.loginfo(f"Found category {category}")
+                    
+                    if len(found_categories) == 0:
+                        self.text_pub.publish(corrected_text)
+                        rospy.loginfo("Go to gpt")
+                        # self.conv_break = False
+                        self.first_conversation = False
+                        self.action_flag = False
+                    else:
+                        if found_categories[0] == "Breathing Exercises":
+                            rospy.loginfo("Doing Breathing Exercises")
+                            breathing = BreathingExercise()
+                            breathing.run()
+                            self.action_flag = True
+
+                        elif found_categories[0] == "Get a Snack":
+                            rospy.loginfo("Doing Get a Snack")
+                            snake = GetSnack()
+                            snake.run()
+                            self.action_flag = True
+
+                        elif found_categories[0] == "Stress Ball":
+                            rospy.loginfo("Doing Stress Ball")
+                            ball = CatchBall()
+                            ball.run()
+                            self.action_flag = True
+
+                        elif found_categories[0] == "Wave":
+                            rospy.loginfo("Doing a wave")
+                            play_action('wave')
+                            play_action('home')
+                            self.action_flag = True
+
+                        elif found_categories[0] == "Tell a Joke":
+                            rospy.loginfo("Doing Tell a Joke")
+                            request_joke = "Can you tell me a Australian joke?"
+                            self.text_pub.publish(request_joke)
+                            self.action_flag = False
+
+                        elif found_categories[0] == "Schedule a Meeting":
+                            rospy.loginfo("Doing schedule a meeting")
+                            create_event_calendar()
+                            schedule = Showing_Events_Calender()
+                            rospy.loginfo(schedule)
+                            self.speak.text_to_speech(schedule, 1.2)
+                            self.action_flag = True
+
+                        elif found_categories[0] == "Navigation":
+                            rospy.loginfo("Doing navigation")
+                            navigation = "Which room do you want to go? Meeting room A, meeting room B, office desk, or the kitchen?"
+                            self.speak.text_to_speech(navigation, 1.2)
+                            time.sleep(1)
+
+                            # listening to user's response
+                            navigation_response = self.recognize_speech_whisper()
+                            navigation_response = self.check_grammar(navigation_response)
+
+                            if "a" in navigation_response or "A" in navigation_response:
+                                rospy.loginfo("Show meeting room A")
+                                navigation = "I'll show you meeting room A"
+                                self.speak.text_to_speech(navigation, 1.2)
+                                self.action_flag = True
+
+                            elif "b" in navigation_response or "B" in navigation_response:
+                                rospy.loginfo("Show meeting room B")
+                                navigation = "I'll show you meeting room B"
+                                self.speak.text_to_speech(navigation, 1.2)
+                                follow_me.run()
+
+                                show_around.run()
+                                self.action_flag = True
+
+                            elif "desk" in navigation_response or "Desk" in navigation_response:
+                                rospy.loginfo("Show office desk")
+                                navigation = "I'll show you your desk"
+                                self.speak.text_to_speech(navigation, 1.2)
+                                follow_me.run()
+
+                                show_around.run()
+                                self.action_flag = True
+
+                            elif "kitchen" in navigation_response or "Kitchen" in navigation_response:
+                                rospy.loginfo("Show kitchen")
+                                navigation = "I'll show you our kitchen. There is a coffee machine."
+                                self.speak.text_to_speech(navigation, 1.2)
+                                follow_me.run()
+
+                                show_around.run()
+                                self.action_flag = True
+                            else:
+                                navigation = "I'm sorry I missed that, can you say it again?"
+                                self.speak.text_to_speech(navigation, 1.2)
+                                time.sleep(1)
+
+                                # listening to user's response
+                                navigation_response = self.recognize_speech_whisper()
+                                navigation_response = self.check_grammar(navigation_response)
+
+
+                                if "a" in navigation_response or "A" in navigation_response:
+                                    rospy.loginfo("Show meeting room A")
+                                    navigation = "I'll show you meeting room A"
+                                    self.speak.text_to_speech(navigation, 1.2)
+                                    follow_me.run()
+
+                                    show_around.run()
+                                    self.action_flag = True
+
+                                elif "b" in navigation_response or "B" in navigation_response:
+                                    rospy.loginfo("Show meeting room B")
+                                    navigation = "I'll show you meeting room B"
+                                    self.speak.text_to_speech(navigation, 1.2)
+                                    follow_me.run()
+
+                                    show_around.run()
+                                    self.action_flag = True
+
+                                elif "desk" in navigation_response or "Desk" in navigation_response:
+                                    rospy.loginfo("Show office desk")
+                                    navigation = "I'll show you your desk"
+                                    self.speak.text_to_speech(navigation, 1.2)
+                                    follow_me.run()
+
+                                    show_around.run()
+                                    self.action_flag = True
+
+                                elif "kitchen" in navigation_response or "Kitchen" in navigation_response:
+                                    rospy.loginfo("Show kitchen")
+                                    navigation = "I'll show you our kitchen. There is a coffee machine."
+                                    self.speak.text_to_speech(navigation, 1.2)
+                                    follow_me.run()
+
+                                    show_around.run()
+                                    self.action_flag = True
+
+                                else:
+                                    navigation = "Do you want to talk somethin else?"
+                                    self.speak.text_to_speech(navigation, 1.2)
+                                    time.sleep(1)
+                                    self.action_flag = True
+                            
                         
                 else:
                     rospy.loginfo(f"Ignoring the input. {text}")
@@ -235,13 +359,11 @@ class VoiceRecognitionServer:
 
         while not rospy.is_shutdown():
             time_now = int(rospy.get_time())
-            time_now = int(rospy.get_time())
             duration = time_now - time_start
             last_time = int(self.last_flag_timestamp)
             if duration > 600.0 and reminder_flag == False:
                 text = "As you know, I am here for you to reduce your stress, to keep you healthy, to support you with scheduling meetings and to make your work life easier."
-                # self.speak.text_to_speech(text, 1)
-                self.tts(text)
+                self.speak.text_to_speech(text, 1)
             else:
                 if self.first_conversation == True or time_now == last_time or self.action_flag == True:
                     self.processing()

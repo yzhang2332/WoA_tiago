@@ -6,20 +6,17 @@ from play_motion_msgs.msg import PlayMotionAction, PlayMotionGoal
 from sensor_msgs.msg import JointState
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from std_msgs.msg import Float64
-# from text_to_speech_gpt4 import TTSFunction
+from woa_tiago.tiago_gpt4.script.sim_script.sim_text_to_speech_gpt4 import TTSFunction
 import time
 from control_msgs.msg import FollowJointTrajectoryAction, FollowJointTrajectoryGoal
 import threading
 from play_motion_msgs.msg import PlayMotionAction, PlayMotionGoal
 
-from pal_interaction_msgs.msg import TtsAction, TtsGoal
-
-
 class GetSnack:
     def __init__(self):
         
 
-        # self.speak = TTSFunction()
+        self.speak = TTSFunction()
 
         # Publisher for controlling Tiago's torso height
         self.height_pub = rospy.Publisher('/torso_controller/command', JointTrajectory, queue_size=10)
@@ -38,10 +35,6 @@ class GetSnack:
 
         self.home_client = actionlib.SimpleActionClient("play_motion", PlayMotionAction)
         self.home_client.wait_for_server()
-
-        self.tts_client = actionlib.SimpleActionClient('/tts', TtsAction)
-        self.tts_client.wait_for_server()
-        rospy.loginfo("Tts server connected.")
 
         rospy.wait_for_message("joint_states", JointState)
         rospy.sleep(3.0)
@@ -79,15 +72,6 @@ class GetSnack:
         self.height_pub.publish(traj)
         time.sleep(duration)
 
-
-    def tts(self, text):
-        rospy.loginfo("Inside the tts function!!!")
-        # Create a goal to say our sentence
-        goal = TtsGoal()
-        goal.rawtext.text = text
-        goal.rawtext.lang_id = "en_GB"
-        # Send the goal and wait
-        self.tts_client.send_goal_and_wait(goal)
 
     
     def move_arm(self, joint_angles, t):
@@ -139,7 +123,7 @@ class GetSnack:
             rospy.loginfo("Gripper did not complete before the timeout.")
     
     def speak_and_move(self, text, joint_angles, t):
-        speak_thread = threading.Thread(target=self.tts, args=(text,))
+        speak_thread = threading.Thread(target=self.speak, args=(text, 1.2))
         speak_thread.start()
 
         arm_thread = threading.Thread(target=self.move_arm(joint_angles, t))

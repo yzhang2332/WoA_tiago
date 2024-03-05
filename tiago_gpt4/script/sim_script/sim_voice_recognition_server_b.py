@@ -11,21 +11,15 @@ import sys
 import yaml
 import os
 from nltk.tokenize import word_tokenize
-from breathing import BreathingExercise
-from handover_snacks import GetSnack
-from strech_ball import CatchBall
-from def_actions import play_action
-# from text_to_speech_gpt4 import TTSFunction
+from woa_tiago.tiago_gpt4.script.sim_script.sim_breathing import BreathingExercise
+from woa_tiago.tiago_gpt4.script.sim_script.sim_handover_snacks import GetSnack
+from woa_tiago.tiago_gpt4.script.sim_script.sim_strech_ball import CatchBall
+from woa_tiago.tiago_gpt4.script.sim_script.sim_def_actions import play_action
+from woa_tiago.tiago_gpt4.script.sim_script.sim_text_to_speech_gpt4 import TTSFunction
 import time
-from create_calendar import create_event_calendar
-from Showing_Events_Caleder import Showing_Events_Calender
-from flask_app import run_app_in_thread, set_signal_flag
-
-
-from pal_interaction_msgs.msg import TtsAction, TtsGoal
-import actionlib
-
-
+from woa_tiago.tiago_gpt4.script.sim_script.sim_create_calendar import create_event_calendar
+from woa_tiago.tiago_gpt4.script.sim_script.sim_Showing_Events_Caleder import Showing_Events_Calender
+from woa_tiago.tiago_gpt4.script.sim_script.sim_flask_app import run_app_in_thread, set_signal_flag
 
 
 # Configure your OpenAI API key here
@@ -58,23 +52,10 @@ class VoiceRecognitionServer:
         self.last_flag_timestamp = 0
         self.first_conversation = True
         self.action_flag = False
-        # self.speak = TTSFunction()
+        self.speak = TTSFunction()
         # self.conv_break = False
         
-        self.tts_client = actionlib.SimpleActionClient('/tts', TtsAction)
-        self.tts_client.wait_for_server()
-        rospy.loginfo("Tts server connected.")
 
-        
-    def tts(self, text):
-        rospy.loginfo("Inside the tts function!!!")
-        # Create a goal to say our sentence
-        goal = TtsGoal()
-        goal.rawtext.text = text
-        goal.rawtext.lang_id = "en_GB"
-        # Send the goal and wait
-        self.tts_client.send_goal_and_wait(goal)
-    
 
     def flag_callback(self, msg):
         # Update the last flag timestamp when a new message is received
@@ -240,8 +221,7 @@ class VoiceRecognitionServer:
             last_time = int(self.last_flag_timestamp)
             if duration > 600.0 and reminder_flag == False:
                 text = "As you know, I am here for you to reduce your stress, to keep you healthy, to support you with scheduling meetings and to make your work life easier."
-                # self.speak.text_to_speech(text, 1)
-                self.tts(text)
+                self.speak.text_to_speech(text, 1)
             else:
                 if self.first_conversation == True or time_now == last_time or self.action_flag == True:
                     self.processing()

@@ -4,10 +4,7 @@ import rospy
 import actionlib
 from play_motion_msgs.msg import PlayMotionAction, PlayMotionGoal
 from sensor_msgs.msg import JointState
-# from text_to_speech_gpt4 import TTSFunction
-
-from pal_interaction_msgs.msg import TtsAction, TtsGoal
-
+from woa_tiago.tiago_gpt4.script.sim_script.sim_text_to_speech_gpt4 import TTSFunction
 
 def play_action(action_name):
   # write the name of your action as action_name, then will play that certain action.
@@ -32,17 +29,7 @@ def play_action(action_name):
   elif action_name == 'shake_hands':
     rospy.loginfo("shake hands...")
     text = "Let's shake hands."
-
-    tts_client = actionlib.SimpleActionClient('/tts', TtsAction)
-    tts_client.wait_for_server()
-    rospy.loginfo("Tts server connected.")
-
-    tts_goal = TtsGoal()
-    tts_goal.rawtext.text = text
-    tts_goal.rawtext.lang_id = "en_GB"
-    # Send the goal and wait
-    tts_client.send_goal_and_wait(tts_goal)
-
+    TTSFunction.text_to_speech(text)
     goal.motion_name = 'shake_hands'
     goal.skip_planning = False
 

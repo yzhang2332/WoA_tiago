@@ -18,17 +18,16 @@ from control_msgs.msg import FollowJointTrajectoryAction, FollowJointTrajectoryG
 import threading
 from play_motion_msgs.msg import PlayMotionAction, PlayMotionGoal
 
-from pal_interaction_msgs.msg import TtsAction, TtsGoal
-
-
 class BreathingExercise:
     def __init__(self):
-        rospy.init_node('breathing_exercise')
+        
 
         # self.soundhandle = SoundClient()
 
         # Publisher for controlling Tiago's torso height
         self.height_pub = rospy.Publisher('/torso_controller/command', JointTrajectory, queue_size=10)
+
+        # self.speech_pub = rospy.Publisher('/tts/goal', TtsActionGoal, queue_size=10)
 
         # Subscribe to the torso sensor height
         self.current_height = rospy.Subscriber("/joint_states", JointState, self.joint_states_callback)
@@ -37,23 +36,19 @@ class BreathingExercise:
         # Wait for the sound client to properly initialize
         # time.sleep(1)
 
-        # self.speak = TTSFunction()
+        self.speak = TTSFunction()
 
         self.unfold_client = actionlib.SimpleActionClient('/arm_controller/follow_joint_trajectory', FollowJointTrajectoryAction)
         self.lower_client = actionlib.SimpleActionClient('/arm_controller/follow_joint_trajectory', FollowJointTrajectoryAction)
         self.unfold_client.wait_for_server()
         self.lower_client.wait_for_server()
-        rospy.loginfo("Arm server connected.")
-
-        self.tts_client = actionlib.SimpleActionClient('/tts', TtsAction)
-        self.tts_client.wait_for_server()
-        rospy.loginfo("Tts server connected.")
+        rospy.loginfo("...connected.")
 
         self.home_client = actionlib.SimpleActionClient("play_motion", PlayMotionAction)
         self.home_client.wait_for_server()
 
         rospy.wait_for_message("joint_states", JointState)
-        rospy.sleep(1.0)
+        rospy.sleep(3.0)
 
         rospy.loginfo("Connected to server")
 
@@ -95,26 +90,35 @@ class BreathingExercise:
 
         # Publish trajectory
         self.height_pub.publish(traj)
+
+        # # Publish speech
+        # speech = TtsActionGoal()
+        # goal = TtsGoal()
+        # rawtext = TtsText()
+
+        # rawtext.text = "Hello world this is testing"
+        # rawtext.lang_id = "en_GB"
+
+        # goal.rawtext = rawtext
+        # speech.goal = goal
+
+        # self.speech_pub.publish(speech)
+
+
+
         time.sleep(duration)
+
+
+        
 
     # def get_current_height(self):
     #     # In a real implementation, you should read the current height from sensors
     #     # For simplicity, let's assume the initial height is 0.0
     #     return self.current_height
 
-    def tts(self, text):
-        rospy.loginfo("Inside the tts function!!!")
-        # Create a goal to say our sentence
-        goal = TtsGoal()
-        goal.rawtext.text = text
-        goal.rawtext.lang_id = "en_GB"
-        # Send the goal and wait
-        self.tts_client.send_goal_and_wait(goal)
-
-
     def start_exercise(self):
         def speak_and_move(text, arm_action=None, height=None):
-            speak_thread = threading.Thread(target=self.tts, args=(text,))
+            speak_thread = threading.Thread(target=self.speak.text_to_speech, args=(text, 1.2))
             speak_thread.start()
 
             if arm_action == 'unfold':
@@ -142,8 +146,7 @@ class BreathingExercise:
 
 
         text = "Let's take a moment to recharge and refocus. Join me in a brief breathing exercise to relieve any tension, and to come back to your tasks with renewed energy and focus. We'll do this together for three rounds, syncing our breaths and movements. Find a comfortable standing position, with your feet hip-width apart and your spine straight."
-        # speak_and_move(text, "initial", 0.2)
-        speak_and_move(text)
+        speak_and_move(text, "initial", 0.2)
         time.sleep(2)
         # self.speak.text_to_speech(text, 1.2)
         # text = "Find a comfortable standing position, with your feet hip-width apart and your spine straight."
@@ -309,9 +312,79 @@ class BreathingExercise:
         self.home_client.wait_for_result(rospy.Duration(10.0))
         rospy.loginfo("Arm tucked.")
 
+    '''
+    def text_to_speech(self, text):
+        # 6 7 10
+        # break: 0, 1
+        # real robot: not 6, 7, 14, 15
+        my_device_index = 16
+
+        try:
+            response = openai.audio.speech.create(
+                model="tts-1",
+                voice="shimmer",
+                input= text
+                )
+
+            audio_response = response.content
+            # print(type(audio_response))
+            # Convert MP3 bytes to audio segment
+            audio_segment = AudioSegment.from_file(io.BytesIO(audio_response), format="mp3")
+
+            # Export the audio segment to WAV format in memory
+            wav_io = io.BytesIO()
+            my_sample_rate = 44100 # 44100 16000
+            audio_segment.set_frame_rate(my_sample_rate).export(wav_io, format="wav")
+            wav_io.seek(0)  # Go to the beginning of the WAV BytesIO object
+
+
+            # Initialize PyAudio
+            p = pyaudio.PyAudio()
+
+            # Open a stream with the proper configuration for playback
+            self.stream = p.open(format=p.get_format_from_width(audio_segment.sample_width),
+                            channels=audio_segment.channels,
+                            rate=my_sample_rate,
+                            output=True,
+                            output_device_index=my_device_index)
+
+            # Play the stream directly from the WAV BytesIO object
+            wav_data = wav_io.read()
+            self.stream.write(wav_data)
+            # print("speaking")  
+            
+            # Open a stream with the proper configuration for playback
+            # self.stream = p.open(format=p.get_format_from_width(2),  # Assuming 16-bit PCM
+            #                 channels=1,  # Assuming mono audio
+            #                 rate=44100,  # Assuming a sample rate of 44100/ 16000 Hz
+            #                 output=True,
+            #                 output_device_index=my_device_index)
+
+            # Play the stream directly from the bytes object
+            # self.stream.write(audio_response)
+            # print("speaking")
+
+        except Exception as e:
+            rospy.loginfo(f"Failed to play audio: {e}")
+
+        finally:
+            # Close the stream
+            if self.stream:
+                self.stream.stop_stream()
+                self.stream.close()
+
+        # Terminate PyAudio
+        p.terminate()
+    '''
+    def run(self):
+        try:
+            self.start_exercise()
+        except rospy.ROSInterruptException:
+            pass
         
 if __name__ == '__main__':
     try:
+        rospy.init_node('breathing_exercise')
         exercise = BreathingExercise()
         exercise.start_exercise()
     except rospy.ROSInterruptException:

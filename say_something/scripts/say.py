@@ -76,6 +76,7 @@ if __name__ == '__main__':
     # Connect to the text-to-speech action server
     client = SimpleActionClient('/tts', TtsAction)
     client.wait_for_server()
+    rospy.sleep(2)
     # Create a goal to say our sentence
     goal = TtsGoal()
     goal.rawtext.text = text

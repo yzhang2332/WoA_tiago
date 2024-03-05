@@ -6,20 +6,18 @@ from play_motion_msgs.msg import PlayMotionAction, PlayMotionGoal
 from sensor_msgs.msg import JointState
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from std_msgs.msg import Float64
-# from text_to_speech_gpt4 import TTSFunction
+from woa_tiago.tiago_gpt4.script.sim_script.sim_text_to_speech_gpt4 import TTSFunction
 import time
 from control_msgs.msg import FollowJointTrajectoryAction, FollowJointTrajectoryGoal
 import threading
 from play_motion_msgs.msg import PlayMotionAction, PlayMotionGoal
-
-from pal_interaction_msgs.msg import TtsAction, TtsGoal
 
 class ShowAround:
     def __init__(self):
         # Publisher for controlling Tiago's torso height
         self.height_pub = rospy.Publisher('/torso_controller/command', JointTrajectory, queue_size=10)
 
-        # self.speak = TTSFunction()
+        self.speak = TTSFunction()
 
         # Subscribe to the torso sensor height
         self.current_height = rospy.Subscriber("/joint_states", JointState, self.joint_states_callback)
@@ -32,10 +30,6 @@ class ShowAround:
         self.gripper_client = actionlib.SimpleActionClient('/parallel_gripper_controller/follow_joint_trajectory', FollowJointTrajectoryAction)
         self.gripper_client.wait_for_server()
         rospy.loginfo("gripper server connected.")
-
-        self.tts_client = actionlib.SimpleActionClient('/tts', TtsAction)
-        self.tts_client.wait_for_server()
-        rospy.loginfo("Tts server connected.")
 
         self.home_client = actionlib.SimpleActionClient("play_motion", PlayMotionAction)
         self.home_client.wait_for_server()
@@ -132,15 +126,6 @@ class ShowAround:
         self.home_client.send_goal(goal)
         self.home_client.wait_for_result(rospy.Duration(10.0))
         rospy.loginfo("Arm home.")
-    
-    def tts(self, text):
-        rospy.loginfo("Inside the tts function!!!")
-        # Create a goal to say our sentence
-        goal = TtsGoal()
-        goal.rawtext.text = text
-        goal.rawtext.lang_id = "en_GB"
-        # Send the goal and wait
-        self.tts_client.send_goal_and_wait(goal)
     
     def run(self, text = None):
         # adjust height first
@@ -155,7 +140,7 @@ class ShowAround:
         left_joint_angles = [2.119355530845695, -1.2343393346546196, -2.9805722141531548, 1.9749106294310392, 1.5930857512282965, 0.204939238789771118, 1.2762728866684454]
         self.move_arm(left_joint_angles, 6)
         if text is not None:
-            self.tts(text)
+            self.speak.text_to_speech(text, 1)
 
         right_joint_angles = [0.3410800549218427, -0.9574367897467364, -3.2205973717717713, 1.6951855224344599, 1.5293958969935455, 0.26235607404607875, 1.2431700210140577]
         self.move_arm(right_joint_angles, 4)
@@ -168,6 +153,8 @@ class FollowMe():
         # Publisher for controlling Tiago's torso height
         self.height_pub = rospy.Publisher('/torso_controller/command', JointTrajectory, queue_size=10)
 
+        self.speak = TTSFunction()
+
         # Subscribe to the torso sensor height
         self.current_height = rospy.Subscriber("/joint_states", JointState, self.joint_states_callback)
     
@@ -179,10 +166,6 @@ class FollowMe():
         self.gripper_client = actionlib.SimpleActionClient('/parallel_gripper_controller/follow_joint_trajectory', FollowJointTrajectoryAction)
         self.gripper_client.wait_for_server()
         rospy.loginfo("gripper server connected.")
-
-        self.tts_client = actionlib.SimpleActionClient('/tts', TtsAction)
-        self.tts_client.wait_for_server()
-        rospy.loginfo("Tts server connected.")
 
         self.home_client = actionlib.SimpleActionClient("play_motion", PlayMotionAction)
         self.home_client.wait_for_server()
@@ -279,16 +262,6 @@ class FollowMe():
         self.home_client.send_goal(goal)
         self.home_client.wait_for_result(rospy.Duration(10.0))
         rospy.loginfo("Arm home.")
-    
-    def tts(self, text):
-        rospy.loginfo("Inside the tts function!!!")
-        # Create a goal to say our sentence
-        goal = TtsGoal()
-        goal.rawtext.text = text
-        goal.rawtext.lang_id = "en_GB"
-        # Send the goal and wait
-        self.tts_client.send_goal_and_wait(goal)
-    
     
     def run(self):
         # adjust height first
@@ -304,7 +277,7 @@ class FollowMe():
         open_joint_angles = [1.4782811164506282, -1.29, -2.88, 2.16, 1.63, 0.52, 1.3]
         self.move_arm(open_joint_angles, 6)
 
-        self.tts("follow me")
+        self.speak.text_to_speech("follow me", 1)
 
         close_joint_angles = [1.477, -1.27, -2.88, 2.34, 1.59, -1.31, 1.29]
         self.move_arm(close_joint_angles, 1.5)

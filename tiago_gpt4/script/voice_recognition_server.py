@@ -15,11 +15,15 @@ from breathing import BreathingExercise
 from handover_snacks import GetSnack
 from strech_ball import CatchBall
 from def_actions import play_action
-from text_to_speech_gpt4 import TTSFunction
+# from text_to_speech_gpt4 import TTSFunction
 import time
 from create_calendar import create_event_calendar
 from Showing_Events_Caleder import Showing_Events_Calender
 from customized_gesture import FollowMe, ShowAround
+
+
+from pal_interaction_msgs.msg import TtsAction, TtsGoal
+import actionlib
 
 
 # Configure your OpenAI API key here
@@ -49,10 +53,21 @@ class VoiceRecognitionServer:
         self.last_flag_timestamp = 0
         self.first_conversation = True
         self.action_flag = False
-        self.speak = TTSFunction()
+        # self.speak = TTSFunction()
         # self.conv_break = False
-        
 
+        self.tts_client = actionlib.SimpleActionClient('/tts', TtsAction)
+        self.tts_client.wait_for_server()
+        rospy.loginfo("Tts server connected.")
+        
+    def tts(self, text):
+        rospy.loginfo("Inside the tts function!!!")
+        # Create a goal to say our sentence
+        goal = TtsGoal()
+        goal.rawtext.text = text
+        goal.rawtext.lang_id = "en_GB"
+        # Send the goal and wait
+        self.tts_client.send_goal_and_wait(goal)
 
     def flag_callback(self, msg):
         # Update the last flag timestamp when a new message is received
@@ -234,13 +249,15 @@ class VoiceRecognitionServer:
                             create_event_calendar()
                             schedule = Showing_Events_Calender()
                             rospy.loginfo(schedule)
-                            self.speak.text_to_speech(schedule, 1.2)
+                            # self.speak.text_to_speech(schedule, 1.2)
+                            self.tts(schedule)
                             self.action_flag = True
 
                         elif found_categories[0] == "Navigation":
                             rospy.loginfo("Doing navigation")
                             navigation = "Which room do you want to go? Meeting room A, meeting room B, office desk, or the kitchen?"
-                            self.speak.text_to_speech(navigation, 1.2)
+                            # self.speak.text_to_speech(navigation, 1.2)
+                            self.tts(navigation)
                             time.sleep(1)
 
                             # listening to user's response
@@ -250,13 +267,15 @@ class VoiceRecognitionServer:
                             if "a" in navigation_response or "A" in navigation_response:
                                 rospy.loginfo("Show meeting room A")
                                 navigation = "I'll show you meeting room A"
-                                self.speak.text_to_speech(navigation, 1.2)
+                                # self.speak.text_to_speech(navigation, 1.2)
+                                self.tts(navigation)
                                 self.action_flag = True
 
                             elif "b" in navigation_response or "B" in navigation_response:
                                 rospy.loginfo("Show meeting room B")
                                 navigation = "I'll show you meeting room B"
-                                self.speak.text_to_speech(navigation, 1.2)
+                                # self.speak.text_to_speech(navigation, 1.2)
+                                self.tts(navigation)
                                 follow_me.run()
 
                                 show_around.run()
@@ -265,7 +284,8 @@ class VoiceRecognitionServer:
                             elif "desk" in navigation_response or "Desk" in navigation_response:
                                 rospy.loginfo("Show office desk")
                                 navigation = "I'll show you your desk"
-                                self.speak.text_to_speech(navigation, 1.2)
+                                # self.speak.text_to_speech(navigation, 1.2)
+                                self.tts(navigation)
                                 follow_me.run()
 
                                 show_around.run()
@@ -274,14 +294,16 @@ class VoiceRecognitionServer:
                             elif "kitchen" in navigation_response or "Kitchen" in navigation_response:
                                 rospy.loginfo("Show kitchen")
                                 navigation = "I'll show you our kitchen. There is a coffee machine."
-                                self.speak.text_to_speech(navigation, 1.2)
+                                # self.speak.text_to_speech(navigation, 1.2)
+                                self.tts(navigation)
                                 follow_me.run()
 
                                 show_around.run()
                                 self.action_flag = True
                             else:
                                 navigation = "I'm sorry I missed that, can you say it again?"
-                                self.speak.text_to_speech(navigation, 1.2)
+                                # self.speak.text_to_speech(navigation, 1.2)
+                                self.tts(navigation)
                                 time.sleep(1)
 
                                 # listening to user's response
@@ -292,7 +314,8 @@ class VoiceRecognitionServer:
                                 if "a" in navigation_response or "A" in navigation_response:
                                     rospy.loginfo("Show meeting room A")
                                     navigation = "I'll show you meeting room A"
-                                    self.speak.text_to_speech(navigation, 1.2)
+                                    # self.speak.text_to_speech(navigation, 1.2)
+                                    self.tts(navigation)
                                     follow_me.run()
 
                                     show_around.run()
@@ -301,7 +324,8 @@ class VoiceRecognitionServer:
                                 elif "b" in navigation_response or "B" in navigation_response:
                                     rospy.loginfo("Show meeting room B")
                                     navigation = "I'll show you meeting room B"
-                                    self.speak.text_to_speech(navigation, 1.2)
+                                    # self.speak.text_to_speech(navigation, 1.2)
+                                    self.tts(navigation)
                                     follow_me.run()
 
                                     show_around.run()
@@ -310,7 +334,8 @@ class VoiceRecognitionServer:
                                 elif "desk" in navigation_response or "Desk" in navigation_response:
                                     rospy.loginfo("Show office desk")
                                     navigation = "I'll show you your desk"
-                                    self.speak.text_to_speech(navigation, 1.2)
+                                    # self.speak.text_to_speech(navigation, 1.2)
+                                    self.tts(navigation)
                                     follow_me.run()
 
                                     show_around.run()
@@ -319,7 +344,8 @@ class VoiceRecognitionServer:
                                 elif "kitchen" in navigation_response or "Kitchen" in navigation_response:
                                     rospy.loginfo("Show kitchen")
                                     navigation = "I'll show you our kitchen. There is a coffee machine."
-                                    self.speak.text_to_speech(navigation, 1.2)
+                                    # self.speak.text_to_speech(navigation, 1.2)
+                                    self.tts(navigation)
                                     follow_me.run()
 
                                     show_around.run()
@@ -327,7 +353,8 @@ class VoiceRecognitionServer:
 
                                 else:
                                     navigation = "Do you want to talk somethin else?"
-                                    self.speak.text_to_speech(navigation, 1.2)
+                                    # self.speak.text_to_speech(navigation, 1.2)
+                                    self.tts(navigation)
                                     time.sleep(1)
                                     self.action_flag = True
                             
@@ -363,7 +390,8 @@ class VoiceRecognitionServer:
             last_time = int(self.last_flag_timestamp)
             if duration > 600.0 and reminder_flag == False:
                 text = "As you know, I am here for you to reduce your stress, to keep you healthy, to support you with scheduling meetings and to make your work life easier."
-                self.speak.text_to_speech(text, 1)
+                # self.speak.text_to_speech(text, 1)
+                self.tts(text)
             else:
                 if self.first_conversation == True or time_now == last_time or self.action_flag == True:
                     self.processing()
