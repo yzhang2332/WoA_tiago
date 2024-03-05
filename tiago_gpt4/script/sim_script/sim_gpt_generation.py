@@ -2,7 +2,7 @@
 import rospy
 from std_msgs.msg import String
 import openai
-from woa_tiago.tiago_gpt4.script.sim_script.sim_text_to_speech_gpt4 import TTSFunction
+from sim_text_to_speech_gpt4 import TTSFunction
 from actionlib import SimpleActionClient
 
 import yaml
@@ -10,7 +10,7 @@ import os
 
 # Configure your OpenAI API key here
 current_dir = os.path.dirname(__file__)  # Gets the directory of the current script
-config_path = os.path.join(current_dir, '..', 'config', 'gpt_api.yaml')  # Navigate to the config.yaml file
+config_path = os.path.join(current_dir, '..', '..', 'config', 'gpt_api.yaml')  # Navigate to the config.yaml file
 with open(config_path, 'r') as file:
     config = yaml.safe_load(file)
 openai.api_key = config['api_key']

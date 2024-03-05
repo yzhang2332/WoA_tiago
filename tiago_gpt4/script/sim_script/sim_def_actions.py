@@ -4,7 +4,7 @@ import rospy
 import actionlib
 from play_motion_msgs.msg import PlayMotionAction, PlayMotionGoal
 from sensor_msgs.msg import JointState
-from woa_tiago.tiago_gpt4.script.sim_script.sim_text_to_speech_gpt4 import TTSFunction
+from sim_text_to_speech_gpt4 import TTSFunction
 
 def play_action(action_name):
   # write the name of your action as action_name, then will play that certain action.

@@ -7,7 +7,7 @@ from std_msgs.msg import String
 # from pydub.playback import play
 # import io
 # from text_to_speech_gpt4 import TTSFunction
-from woa_tiago.tiago_gpt4.script.sim_script.sim_gpt_generation_b import GenerationFuncion
+from sim_gpt_generation_b import GenerationFuncion
 import time
 
 # Configure your OpenAI API key here

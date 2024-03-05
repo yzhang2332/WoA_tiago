@@ -6,7 +6,7 @@ from play_motion_msgs.msg import PlayMotionAction, PlayMotionGoal
 from sensor_msgs.msg import JointState
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from std_msgs.msg import Float64
-from woa_tiago.tiago_gpt4.script.sim_script.sim_text_to_speech_gpt4 import TTSFunction
+from sim_text_to_speech_gpt4 import TTSFunction
 import time
 from control_msgs.msg import FollowJointTrajectoryAction, FollowJointTrajectoryGoal
 import threading
