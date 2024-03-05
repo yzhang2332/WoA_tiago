@@ -14,9 +14,6 @@ class NavigationClient:
 
     ##################################################
     def __init__(self, init_poi):
-
-        rospy.init_node('navigation_function', anonymous=True)
-
         # Subscribe to /mobile_base_controller/cmd_vel
         # self.vel_sub = rospy.Subscriber('/mobile_base_controller/cmd_vel', Twist, self.vel_callback)
         self.vel_sub = rospy.Subscriber('/nav_vel', Twist, self.vel_callback)
@@ -142,6 +139,7 @@ class NavigationClient:
 # If the python node is executed as main process (sourced directly)
 if __name__ == '__main__':
     try:
+        rospy.init_node('navigation_function', anonymous=True)
         Nav = NavigationClient("one")
         # rospy.spin()
         # Nav.run()

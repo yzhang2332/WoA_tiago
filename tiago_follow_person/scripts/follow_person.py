@@ -78,6 +78,8 @@ class PersonFollower:
 
     def obstacle_dir_callback(self, msg: JointState):
         # from obstacle_checker node
+        if not self.follow_flag:
+            return
         if self.obstacle_flag:
             return
         obstacle_dir = msg.position

@@ -26,8 +26,6 @@ from pal_interaction_msgs.msg import TtsAction, TtsGoal
 import actionlib
 
 
-
-
 # Configure your OpenAI API key here
 current_dir = os.path.dirname(__file__)  # Gets the directory of the current script
 config_path = os.path.join(current_dir, '..', 'config', 'gpt_api.yaml')  # Navigate to the config.yaml file

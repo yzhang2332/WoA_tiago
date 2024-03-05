@@ -11,7 +11,7 @@ class HalfTurn:
 
     def __init__(self):
 
-        rospy.init_node('half_turn', anonymous=True)
+        
         self.pub_cmd = rospy.Publisher('/mobile_base_controller/cmd_vel', Twist, queue_size=1)
 
         self.turn_duration = 5.0                         # seconds
@@ -38,9 +38,10 @@ class HalfTurn:
 
  
 def main():
-
+    rospy.init_node('half_turn', anonymous=True)
     turner = HalfTurn()
     turner.run()
 
 if __name__ == '__main__':
     main()
+    

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import rospy
-from std_msgs.msg import String
+from std_msgs.msg import String, Bool
 import openai
 # from text_to_speech_gpt4 import TTSFunction
 import yaml
@@ -12,10 +12,11 @@ from handover_snacks import GetSnack
 from strech_ball import CatchBall
 from def_actions import play_action
 from customized_gesture import FollowMe, ShowAround
+from tiago_nav.scripts.nav_function import NavigationClient
+from tiago_follow_person.scripts.half_turn import HalfTurn
 
 from pal_interaction_msgs.msg import TtsAction, TtsGoal
 import actionlib
-
 
 
 # Configure your OpenAI API key here
@@ -28,8 +29,14 @@ openai.api_key = config['api_key']
 class GenerationFuncion():
     def __init__(self):
         # self.speak = TTSFunction()
+        self.navigation = NavigationClient("one")
         self.follow_me = FollowMe()
         self.show_around = ShowAround()
+        self.turn_around = HalfTurn()
+
+        self.follow_person_pub = rospy.Publisher('/follow_person_flag', Bool, queue_size=1)
+        self.bool_msg = Bool()
+        
 
         self.tts_client = actionlib.SimpleActionClient('/tts', TtsAction)
         self.tts_client.wait_for_server()
@@ -75,6 +82,10 @@ class GenerationFuncion():
             self.tts(robot_response)
             # self.speak.text_to_speech(robot_response, 1.0)
             if action_keyword != "no_action":
+                
+                self.bool_msg.data = False
+                self.follow_person_pub.publish(self.bool_msg)
+
                 if action_keyword == "breathing_exercise":
                     rospy.loginfo("Doing Breathing Exercises")
                     breathing = BreathingExercise()
@@ -93,30 +104,36 @@ class GenerationFuncion():
                     play_action('home')
                 elif action_keyword == "schedule_meeting":
                     rospy.loginfo("Doing schedule a meeting")
-                    # todo: turn around
+                    self.turn_around.run()
                     create_event_calendar()
-                    # todo: turn around
+                    self.turn_around.run()
                     schedule = Showing_Events_Calender()
                     rospy.loginfo(schedule)
                     self.tts(schedule)
                     # self.speak.text_to_speech(schedule, 1.2)
+
                 elif action_keyword == "navigate_to_meeting_room_A":
                     rospy.loginfo("Show meeting room A")
                     self.follow_me.run()
-
+                    self.navigation.run("two")
                     self.show_around.run()
+
                 elif action_keyword == "navigate_to_meeting_room_B":
                     rospy.loginfo("Show meeting room B")
                     self.follow_me.run()
-
+                    self.navigation.run("two")
                     self.show_around.run()
+
                 elif action_keyword == "navigate_to_kitchen":
                     rospy.loginfo("Show kitchen")
                     self.follow_me.run()
-
+                    self.navigation.run("two")
                     self.show_around.run()
                 else:
                     rospy.loginfo("Wrong keyword.")
+
+                self.bool_msg.data = True
+                self.follow_person_pub.publish(self.bool_msg)
 
             return robot_response
         except Exception as e:

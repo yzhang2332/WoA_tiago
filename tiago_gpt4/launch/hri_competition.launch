@@ -9,5 +9,9 @@
   <node pkg="tiago_gpt4" type="gpt4_server_b.py" name="gpt4_client" output="screen">
     </node>
 
+  <include file="$(find tiago_follow_person)/launch/init.launch">
+   </include>
 
+  <include file="$(find tiago_follow_person)/launch/run.launch">
+   </include>
 </launch>
