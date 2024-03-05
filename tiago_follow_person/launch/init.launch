@@ -6,7 +6,23 @@
   <node pkg="tiago_follow_person" type="point_head_forward.py" name="point_head_forward" output="screen"></node>
 
   <!-- 2. Run YOLOv5 -->
-  <include file="$(find yolov5_ros)/launch/yolov5.launch"/>
+  <!-- <include file="$(find yolov5_ros)/launch/yolov5.launch"/> -->
+
+  <!-- 2. Run YOLOv8 -->
+  <!-- <include file="$(find ultralytics_ros)/launch/tracker.launch"/> -->
+
+  <!-- 2. Run YOLOv8 -->
+  <include file="$(find ultralytics_ros)/launch/tracker.launch">
+    <arg name="debug" value="true"/>
+    <arg name="yolo_model" value="yolov8n.pt"/>
+    <arg name="input_topic" value="/xtion/rgb/image_raw"/>
+    <arg name="result_topic" default="/yolov8/detections"/>
+    <arg name="conf_thres" value="0.8"/>
+    <arg name="max_det" value="5"/>
+    <!-- <arg name="classes" value="[0, 1]"/> -->
+    <arg name="classes" value="[0]"/>
+    <arg name="device" value="cpu"/>
+  </include>
 
   <!-- 3. Run the follow_person node -->
   <!-- <node pkg="tiago_follow_person" type="obstacle_checker.py" name="obstacle_checker" output="screen"></node> -->
