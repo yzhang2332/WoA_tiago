@@ -85,17 +85,21 @@ class GenerationFuncion():
                     rospy.loginfo("Show meeting room A")
                     self.follow_me.run()
 
-                    self.show_around.run()
+                    text = "This is the meeting room B. You can have a meeting here."
+                    self.show_around.run(text)
+
                 elif action_keyword == "navigate_to_meeting_room_B":
                     rospy.loginfo("Show meeting room B")
-                    self.follow_me.run()
 
-                    self.show_around.run()
+                    text = "This is the meeting room B. You can have a meeting here."
+                    self.show_around.run(text)
+
                 elif action_keyword == "navigate_to_kitchen":
                     rospy.loginfo("Show kitchen")
                     self.follow_me.run()
-
-                    self.show_around.run()
+                    
+                    text = "This is the kitchen. Help yourself to a cup of coffee."
+                    self.show_around.run(text)
                 else:
                     rospy.loginfo("Wrong keyword.")
 

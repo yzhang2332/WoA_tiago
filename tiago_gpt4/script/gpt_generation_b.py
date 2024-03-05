@@ -79,7 +79,7 @@ class GenerationFuncion():
                           {"role": "user", "content": 
                            f"{text}. \
                            Note: Please response with proper natural language and provide a keyword after a * sign, without a period mark.\
-                           The keyword should be choose from this list: [{keyword_list}]\
+                           The keyword should be choostexte from this list: [{keyword_list}]\
                            If the keyword isn't 'no_action', keep the natural language response short.\
                             For example: Sure, come with me. *navigate_to_meeting_room_a\
                            "}],
@@ -129,19 +129,22 @@ class GenerationFuncion():
                     rospy.loginfo("Show meeting room A")
                     self.follow_me.run()
                     self.navigation.run("two")
-                    self.show_around.run()
+                    text = "This is the meeting room A. You can have a meeting here."
+                    self.show_around.run(text)
 
                 elif action_keyword == "navigate_to_meeting_room_B":
                     rospy.loginfo("Show meeting room B")
                     self.follow_me.run()
                     self.navigation.run("two")
-                    self.show_around.run()
+                    text = "This is the meeting room B. You can have a meeting here."
+                    self.show_around.run(text)
 
                 elif action_keyword == "navigate_to_kitchen":
                     rospy.loginfo("Show kitchen")
                     self.follow_me.run()
                     self.navigation.run("one")
-                    self.show_around.run()
+                    text = "This is the kitchen. Help yourself to a cup of coffee."
+                    self.show_around.run(text)
                 else:
                     rospy.loginfo("Wrong keyword.")
 

@@ -45,7 +45,7 @@ class ShowAround:
 
     def adjust_height(self, target_height):
         rate = rospy.Rate(10)
-        duration = 6.0  # Duration for height adjustment
+        duration = 2.0  # Duration for height adjustment
 
         traj = JointTrajectory()
         traj.joint_names = ["torso_lift_joint"]
@@ -138,12 +138,12 @@ class ShowAround:
 
         # Arm go left
         left_joint_angles = [2.119355530845695, -1.2343393346546196, -2.9805722141531548, 1.9749106294310392, 1.5930857512282965, 0.204939238789771118, 1.2762728866684454]
-        self.move_arm(left_joint_angles, 6)
+        self.move_arm(left_joint_angles, 2)
         if text is not None:
             self.speak.text_to_speech(text, 1)
 
         right_joint_angles = [0.3410800549218427, -0.9574367897467364, -3.2205973717717713, 1.6951855224344599, 1.5293958969935455, 0.26235607404607875, 1.2431700210140577]
-        self.move_arm(right_joint_angles, 4)
+        self.move_arm(right_joint_angles, 2)
         rospy.loginfo("finish gesture")
 
         self.go_home_position()
@@ -181,7 +181,7 @@ class FollowMe():
 
     def adjust_height(self, target_height):
         rate = rospy.Rate(10)
-        duration = 6.0  # Duration for height adjustment
+        duration = 2.0  # Duration for height adjustment
 
         traj = JointTrajectory()
         traj.joint_names = ["torso_lift_joint"]
@@ -275,27 +275,28 @@ class FollowMe():
         
         # Arm go open
         open_joint_angles = [1.4782811164506282, -1.29, -2.88, 2.16, 1.63, 0.52, 1.3]
-        self.move_arm(open_joint_angles, 6)
+        self.move_arm(open_joint_angles, 1.5)
 
         self.speak.text_to_speech("follow me", 1)
 
         close_joint_angles = [1.477, -1.27, -2.88, 2.34, 1.59, -1.31, 1.29]
-        self.move_arm(close_joint_angles, 1.5)
+        self.move_arm(close_joint_angles, 0.5)
 
-        self.move_arm(open_joint_angles, 1.5)
-        self.move_arm(close_joint_angles, 1.5)
+        self.move_arm(open_joint_angles, 0.5)
+        self.move_arm(close_joint_angles, 0.5)
         rospy.loginfo("finish gesture")
 
         self.go_home_position()
 
 if __name__ == '__main__':
     rospy.init_node('customized_gesture')
-    rospy.loginfo("doing show around")
-    showaround = ShowAround()
-    showaround.run(text="This is our office.")
-    rospy.loginfo("finish show around")
 
-    # rospy.loginfo("doing follow me")
-    # followme = FollowMe()
-    # followme.run()
-    # rospy.loginfo("finish follow me")
+    # rospy.loginfo("doing show around")
+    # showaround = ShowAround()
+    # showaround.run(text="This is our office.")
+    # rospy.loginfo("finish show around")
+
+    rospy.loginfo("doing follow me")
+    followme = FollowMe()
+    followme.run()
+    rospy.loginfo("finish follow me")

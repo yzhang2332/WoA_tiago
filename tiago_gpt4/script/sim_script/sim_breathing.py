@@ -6,7 +6,7 @@ from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from sensor_msgs.msg import JointState
 from std_msgs.msg import Float64
 import time
-# from text_to_speech_gpt4 import TTSFunction
+from sim_text_to_speech_gpt4 import TTSFunction
 # import openai
 # import pyaudio
 # from pydub import AudioSegment
@@ -48,7 +48,7 @@ class BreathingExercise:
         self.home_client.wait_for_server()
 
         rospy.wait_for_message("joint_states", JointState)
-        rospy.sleep(3.0)
+        rospy.sleep(1.0)
 
         rospy.loginfo("Connected to server")
 
@@ -68,7 +68,7 @@ class BreathingExercise:
 
     def adjust_height(self, target_height):
         rate = rospy.Rate(10)
-        duration = 6.0  # Duration for height adjustment
+        duration = 1.0  # Duration for height adjustment
 
         traj = JointTrajectory()
         traj.joint_names = ["torso_lift_joint"]
@@ -257,7 +257,7 @@ class BreathingExercise:
         point.positions = [
             0.21, -0.2, -2.2, 1.15, -1.57, 0.2, 0.0  # Positions for the arm joints
         ]
-        point.time_from_start = rospy.Duration(6.0)
+        point.time_from_start = rospy.Duration(4.0)
         trajectory.points.append(point)
 
         # Set the trajectory in the goal
@@ -289,7 +289,7 @@ class BreathingExercise:
         point.positions = [
             0.21, -0.37, -1.08, 1.18, -2.07, 1.06, -1.58  # Positions for the arm joints
         ]
-        point.time_from_start = rospy.Duration(6.0)
+        point.time_from_start = rospy.Duration(3.0)
         trajectory.points.append(point)
 
         # Set the trajectory in the goal
@@ -318,7 +318,7 @@ class BreathingExercise:
         # break: 0, 1
         # real robot: not 6, 7, 14, 15
         my_device_index = 16
-
+6
         try:
             response = openai.audio.speech.create(
                 model="tts-1",
@@ -335,7 +335,7 @@ class BreathingExercise:
             wav_io = io.BytesIO()
             my_sample_rate = 44100 # 44100 16000
             audio_segment.set_frame_rate(my_sample_rate).export(wav_io, format="wav")
-            wav_io.seek(0)  # Go to the beginning of the WAV BytesIO object
+            wav_io.seek(0)  # Go to the be6ginning of the WAV BytesIO object
 
 
             # Initialize PyAudio
@@ -347,7 +347,7 @@ class BreathingExercise:
                             rate=my_sample_rate,
                             output=True,
                             output_device_index=my_device_index)
-
+6
             # Play the stream directly from the WAV BytesIO object
             wav_data = wav_io.read()
             self.stream.write(wav_data)

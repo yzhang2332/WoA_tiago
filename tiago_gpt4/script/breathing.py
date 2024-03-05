@@ -62,18 +62,9 @@ class BreathingExercise:
             index = msg.name.index("torso_lift_joint")
             self.current_torso_height = msg.position[index]
 
-            # torso_height = float(torso_height.split()[0])
-            # rospy.loginfo("Current Tiago torso height: %s m", self.current_torso_height)
-
-
-    # def speak(self, text):
-    #     rospy.loginfo(text)
-    #     self.soundhandle.say(text)
-    #     time.sleep(2)  # Wait for speech to finish
-
     def adjust_height(self, target_height):
         rate = rospy.Rate(10)
-        duration = 6.0  # Duration for height adjustment
+        duration = 1.0  # Duration for height adjustment
 
         traj = JointTrajectory()
         traj.joint_names = ["torso_lift_joint"]
@@ -97,11 +88,6 @@ class BreathingExercise:
         self.height_pub.publish(traj)
         time.sleep(duration)
 
-    # def get_current_height(self):
-    #     # In a real implementation, you should read the current height from sensors
-    #     # For simplicity, let's assume the initial height is 0.0
-    #     return self.current_height
-
     def tts(self, text):
         rospy.loginfo("Inside the tts function!!!")
         # Create a goal to say our sentence
@@ -123,9 +109,6 @@ class BreathingExercise:
             elif arm_action == 'lower':
                 arm_thread = threading.Thread(target=self.go_lower_arm)
                 arm_thread.start()
-            elif arm_action == 'initial':
-                arm_thread = threading.Thread(target=self.go_initial_arm)
-                arm_thread.start()
             elif arm_action == 'home':
                 arm_thread = threading.Thread(target=self.go_home_position)
                 arm_thread.start()
@@ -145,99 +128,42 @@ class BreathingExercise:
         # speak_and_move(text, "initial", 0.2)
         speak_and_move(text)
         time.sleep(2)
-        # self.speak.text_to_speech(text, 1.2)
-        # text = "Find a comfortable standing position, with your feet hip-width apart and your spine straight."
-        # speak_and_move(text, height=0.2)
-        # self.speak.text_to_speech(text, 1.2)
-
-        # Adjust to the defuant height
-        # self.adjust_height(0.2)
-
-
-        # self.speak("Let's take a moment to recharge and refocus. Stand tall and join me in a brief breathing exercise. It's a great way to clear your mind, relieve any tension, and come back to your tasks with renewed energy and focus. We'll do this together for three rounds, syncing our breaths and movements. Ready to give it a try?")
-
-        # self.speak("Find a comfortable standing position, with your feet hip-width apart and your spine straight. Close your eyes gently if you feel comfortable doing so, or simply soften your gaze.")
 
         for i in range(2):
             # Inhale
             
             text = "Inhale deeply through your nose, feeling your lungs expand fully. Hold your breath for a moment at the top of your inhale."
             speak_and_move(text, 'unfold', 0.35)
-            # self.speak.text_to_speech(text, 1.2)
-            
-            # self.go_unfold_arm()
-            # self.adjust_height(0.35)  # Increase height
-            
-            # self.speak("As we begin, inhale deeply through your nose, feeling your lungs expand fully. Hold your breath for a moment at the top of your inhale. Slowly exhale through your mouth, letting go of any stress or tension you may be holding onto.")
-
+           
             time.sleep(1)  # Wait for user to hold breath
 
             # Exhale
             
             text = "Exhale slowly and completely through your mouth, releasing any remaining tension."
             speak_and_move(text, 'lower', 0.1)
-            
-            # self.speak.text_to_speech(text, 1.2)
-
-            # self.go_lower_arm()
-            # self.adjust_height(0.1)  # Decrease height
-            
-
-            # self.speak("Again, inhale deeply through your nose, feeling the air fill your lungs. Hold briefly. Then exhale slowly and completely through your mouth, releasing any remaining tension.")
 
             time.sleep(1)  # Wait for user to exhale
 
         
         text = "Let's do one more round."
         speak_and_move(text)
-        
-        # self.speak.text_to_speech(text, 1.2)
-        # self.speak("Let's do one more round, inhaling deeply, filling your lungs with fresh, revitalizing air. Hold for a moment. And exhale slowly, feeling any tightness or stress dissolve with each breath. Feel the tension melting away with each breath, leaving you refreshed and ready to tackle your tasks with renewed focus. Whenever you're ready, gently open your eyes. How do you feel?")
 
         # Inhale
         
         text = "Inhaling deeply, filling your lungs with fresh, revitalizing air. Hold for a moment. "
         speak_and_move(text, 'unfold', 0.35)
-        
-        # self.speak.text_to_speech(text, 1.2)
-        # self.go_unfold_arm()
-        # self.adjust_height(0.35)  # Increase height
-        
-        # self.speak("As we begin, inhale deeply through your nose, feeling your lungs expand fully. Hold your breath for a moment at the top of your inhale. Slowly exhale through your mouth, letting go of any stress or tension you may be holding onto.")
 
         time.sleep(1)  # Wait for user to hold breath
 
         # Exhale
         text = "And exhale slowly, feeling any tightness or stress dissolve with each breath. Feel the tension melting away with each breath, leaving you refreshed and ready to tackle your tasks with renewed focus."
         speak_and_move(text, 'lower', 0.1)
-        
-        # self.speak.text_to_speech(text, 1.2)
-        # self.go_lower_arm()
-        # self.adjust_height(0.1)  # Decrease height
 
         text = "How do you feel?"
         speak_and_move(text, 'home', 0.2)
-        
-        # self.speak.text_to_speech(text, 1.2)
-        
-
-        # self.speak("Again, inhale deeply through your nose, feeling the air fill your lungs. Hold briefly. Then exhale slowly and completely through your mouth, releasing any remaining tension.")
 
         time.sleep(1)  # Wait for user to exhale
 
-        # self.adjust_height(0.2)  # Return to default height
-    
-    def go_initial_arm(self):
-        goal = PlayMotionGoal()
-        goal.motion_name = 'unfold_arm'
-        goal.skip_planning = False
-
-        self.home_client.send_goal(goal)
-        self.home_client.wait_for_result(rospy.Duration(10.0))
-        rospy.loginfo("Arm tucked.")
-    
-    
-    
     def go_unfold_arm(self):
         # Define the goal
         goal = FollowJointTrajectoryGoal()
@@ -254,7 +180,7 @@ class BreathingExercise:
         point.positions = [
             0.21, -0.2, -2.2, 1.15, -1.57, 0.2, 0.0  # Positions for the arm joints
         ]
-        point.time_from_start = rospy.Duration(6.0)
+        point.time_from_start = rospy.Duration(4.0)
         trajectory.points.append(point)
 
         # Set the trajectory in the goal
@@ -286,7 +212,7 @@ class BreathingExercise:
         point.positions = [
             0.21, -0.37, -1.08, 1.18, -2.07, 1.06, -1.58  # Positions for the arm joints
         ]
-        point.time_from_start = rospy.Duration(6.0)
+        point.time_from_start = rospy.Duration(3.0)
         trajectory.points.append(point)
 
         # Set the trajectory in the goal
