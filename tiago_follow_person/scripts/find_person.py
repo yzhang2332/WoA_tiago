@@ -22,8 +22,11 @@ class PersonFinder:
 
         rospy.init_node('person_finder', anonymous=True)
 
-        # Bounding box subscriber
-        self.yolo_sub = rospy.Subscriber('/yolov5/detections', BoundingBoxes, self.callback)
+        # Bounding box subscriber (yolov5)
+        # self.yolov5_sub = rospy.Subscriber('/yolov5/detections', BoundingBoxes, self.callback)
+
+        # Bounding box subscriber (yolov8)
+        self.yolov8_sub = rospy.Subscriber('/yolov8/detections', BoundingBoxes, self.callback)
 
         # Head tracking pose publisher
         self.tracking_point_pub = rospy.Publisher('/pixel_to_track', JointState, queue_size=1)
