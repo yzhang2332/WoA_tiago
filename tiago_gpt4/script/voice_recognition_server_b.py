@@ -242,6 +242,7 @@ class VoiceRecognitionServer:
                 text = "As you know, I am here for you to reduce your stress, to keep you healthy, to support you with scheduling meetings and to make your work life easier."
                 # self.speak.text_to_speech(text, 1)
                 self.tts(text)
+                reminder_flag = True
             else:
                 if self.first_conversation == True or time_now == last_time or self.action_flag == True:
                     self.processing()

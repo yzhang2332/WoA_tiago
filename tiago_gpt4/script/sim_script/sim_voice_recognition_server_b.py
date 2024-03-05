@@ -22,6 +22,7 @@ from sim_Showing_Events_Caleder import Showing_Events_Calender
 from sim_flask_app import run_app_in_thread, set_signal_flag
 
 
+
 # Configure your OpenAI API key here
 current_dir = os.path.dirname(__file__)  # Gets the directory of the current script
 config_path = os.path.join(current_dir, '..', '..', 'config', 'gpt_api.yaml')  # Navigate to the config.yaml file
@@ -137,7 +138,7 @@ class VoiceRecognitionServer:
         rospy.loginfo("Recording stopped.")
 
         set_signal_flag(False)
-        
+
         return np.concatenate(recorded_data, axis=0) 
     
     
@@ -222,6 +223,7 @@ class VoiceRecognitionServer:
             if duration > 600.0 and reminder_flag == False:
                 text = "As you know, I am here for you to reduce your stress, to keep you healthy, to support you with scheduling meetings and to make your work life easier."
                 self.speak.text_to_speech(text, 1)
+                reminder_flag = True
             else:
                 if self.first_conversation == True or time_now == last_time or self.action_flag == True:
                     self.processing()

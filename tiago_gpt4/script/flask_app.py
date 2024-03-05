@@ -16,10 +16,12 @@ def show_image():
     else:
         return send_file('../image/speaking.gif', mimetype='image/gif')
 
+
 def set_signal_flag(new_value):
     # Update the flag with a new value
     global flag
     flag = new_value
+
 
 def create_and_run_app():
     app.run(host='0.0.0.0', port=5000, debug=True, use_reloader=False)
