@@ -17,9 +17,10 @@
     <arg name="yolo_model" value="yolov8n.pt"/>
     <arg name="input_topic" value="/xtion/rgb/image_raw"/>
     <arg name="result_topic" default="/yolov8/detections"/>
-    <arg name="conf_thres" value="0.3"/>
-    <arg name="max_det" value="10"/>
-    <arg name="classes" value="[0, 1]"/>
+    <arg name="conf_thres" value="0.4"/>
+    <arg name="max_det" value="5"/>
+    <!-- <arg name="classes" value="[0, 1]"/> -->
+    <arg name="classes" value="[0]"/>
     <arg name="device" value="cpu"/>
   </include>
 

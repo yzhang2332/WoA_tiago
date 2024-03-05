@@ -9,7 +9,7 @@ import rospy
 # from pal_detection_msgs.msg import Detections2d, Detection2d
 # import message_filters
 
-from detection_msgs.msg import BoundingBoxes
+from ultralytics_ros.msg import YoloResult
 from actionlib import SimpleActionClient
 from sensor_msgs.msg import JointState
 from time import sleep
@@ -23,32 +23,34 @@ class PersonFinder:
         rospy.init_node('person_finder', anonymous=True)
 
         # Bounding box subscriber
-        self.yolo_sub = rospy.Subscriber('/yolov5/detections', BoundingBoxes, self.callback)
+        self.yolo_sub = rospy.Subscriber('/yolov8/detections', YoloResult, self.callback)
 
         # Head tracking pose publisher
         self.tracking_point_pub = rospy.Publisher('/pixel_to_track', JointState, queue_size=1)
 
 
-    def callback(self, data:BoundingBoxes):
+    def callback(self, data: YoloResult):
 
-        boxes = data.bounding_boxes
+        detections_list = data.detections.detections
 
-        num_person = 0
+        num_person = len(detections_list)
         centers = []
         areas = []
+
+        for det in detections_list:
+
+            bbox = det.bbox
+
+            # compute center and area of bb
+            center = (bbox.center.x, bbox.center.y)
+            size = (bbox.size_x, bbox.size_y)
+            area = size[0] * size[1]
+
+            # add to temp storage lists
+            centers.append(center)
+            areas.append(area)
         
-        for box in boxes:
-            if box.Class == "person":
-                # print("Found a person!")
-                num_person += 1
-                # compute the center and area of the bounding boxes
-                x, y = self.compute_centre(box.xmin, box.ymin, box.xmax, box.ymax)
-                area = self.compute_area(box.xmin, box.ymin, box.xmax, box.ymax)
-                # add them to the list of bounding boxes containing people
-                centers.append((x, y))
-                areas.append(area)
-        
-        # self.print_info(num_person, centers, areas)
+        self.print_info(num_person, centers, areas)
 
         # Publish pixel to track ONLY IF person is non zero
         if num_person > 0:
@@ -63,13 +65,13 @@ class PersonFinder:
         msg = JointState()
         msg.position = [x, y, 1]
         self.tracking_point_pub.publish(msg)
-        # rospy.loginfo("Sending pixel to track: x, y = %.3f, %.3f" % (x, y))
+        rospy.loginfo("Sending pixel to track: x, y = %.3f, %.3f" % (x, y))
     
     def send_emtpy_msg(self) -> None:
         msg = JointState()
         msg.position = [0.0, 0.0, 0]
         self.tracking_point_pub.publish(msg)
-        # rospy.loginfo("Sending empty message ...")
+        rospy.loginfo("Sending empty message ...")
 
 
     ###### HELPERS ######
@@ -82,17 +84,6 @@ class PersonFinder:
         max_id = areas.index(max_area)
         max_center = centers[max_id]
         return max_center
-
-    def compute_centre(self, xmin, ymin, xmax, ymax):
-        x = (xmin + xmax) / 2
-        y = (ymin + ymax) / 2
-        return x, y
-
-    def compute_area(self, xmin, ymin, xmax, ymax):
-        height = ymax - ymin
-        width = xmax - xmin
-        area = height * width
-        return area
 
 
 
