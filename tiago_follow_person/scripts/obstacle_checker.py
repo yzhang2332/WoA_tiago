@@ -11,6 +11,7 @@ import tf2_ros
 from geometry_msgs.msg import TransformStamped
 from scipy.ndimage import rotate
 from sensor_msgs.msg import JointState
+from std_msgs.msg import Bool
 
 
 class ObstacleChecker:
@@ -18,7 +19,13 @@ class ObstacleChecker:
     def __init__(self):
 
         rospy.init_node('obstacle_checker', anonymous=True)
+
+        self.recovering = False
+        self.check_col_dist = 0.8   # meters
+
         rospy.Subscriber("/move_base/local_costmap/costmap", OccupancyGrid, self.callback)
+        # rospy.Subscriber("/move_base/local_costmap/costmap_updates", OccupancyGrid, self.callback)
+        rospy.Subscriber("/recovering", Bool, self.recover_callback)
 
         self.obstacle_dir_pub = rospy.Publisher('/obstacle_dir', JointState, queue_size=1)
 
@@ -26,8 +33,15 @@ class ObstacleChecker:
         rospy.sleep(1)
         print("Sleeping for 1 second ...")
 
+        
+
+
     def run(self):
         rospy.spin()
+
+
+    def recover_callback(self, msg: Bool):
+        self.recovering = msg.data
 
     
     def publish_static_transformation(self, parent_frame_id, child_frame_id, translation, rotation):
@@ -76,7 +90,7 @@ class ObstacleChecker:
         width = int(length / 4)
 
         # anti-clockwise definition:
-        # 1 - front, 2 - left, 3 - back, 4 - right
+        # indices of the list: 0 - front, 1 - left, 2 - back, 3 - right
 
         # check front
         front_arr = map[0:width, 0:length]
@@ -102,6 +116,10 @@ class ObstacleChecker:
     
 
     def callback(self, data):
+
+        # if recovering in the follow_person node, do not publish the new collision info
+        if self.recovering:
+            return
 
         # rospy.loginfo("Received local costmap data")
 
@@ -133,7 +151,7 @@ class ObstacleChecker:
 
         center_px = 79
 
-        margin = 0.8   # in m
+        margin = self.check_col_dist             # in m
         margin_px = round(margin / resolution)   # in pixels of the matrix
         window_width = margin_px * 2
         # print("margin_px = %d, window_width = %d" % (margin_px, window_width))

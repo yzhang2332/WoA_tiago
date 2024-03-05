@@ -28,6 +28,7 @@ class PersonFollower:
 
         self.follow_flag_sub = rospy.Subscriber("/follow_person_flag", Bool, self.follow_flag_callback)
         self.obstacle_dir_sub = rospy.Subscriber("/obstacle_dir", JointState, self.obstacle_dir_callback)
+        self.recovering_pub = rospy.Publisher('/recovering', Bool, queue_size=1)
 
         self._hz = rospy.get_param('~hz', 10)
         self._forward_rate = rospy.get_param('~forward_rate', 0.1)
@@ -35,8 +36,9 @@ class PersonFollower:
         self._rotation_rate = rospy.get_param('~rotation_rate', 0.1)
 
         self.follow_flag = True               # this listens to the master file
-        self.obstacle_dir = [0, 0, 0, 0]      # this listens to the obstacle_checker node
+        # self.obstacle_dir = [0, 0, 0, 0]      # this listens to the obstacle_checker node
         self.obstacle_flag = False
+        self.recovering = False
 
         self.depth_matrix = None
         self.person_loc = None
@@ -49,7 +51,7 @@ class PersonFollower:
 
         ### define constants ###
         self.max_dist = 1.3          # meters
-        self.min_dist = 1.0          # meters
+        self.min_dist = 1.2          # meters
         self.max_rot_diff = 50       # pixels
 
         self.forward = 0.35          # m/s
@@ -78,14 +80,14 @@ class PersonFollower:
         # from obstacle_checker node
         if self.obstacle_flag:
             return
-        self.obstacle_dir = msg.position
-        print(self.obstacle_dir)
-        all_zeros = all(x == 0 for x in self.obstacle_dir)
+        obstacle_dir = msg.position
+        # print(obstacle_dir)
+        all_zeros = all(x == 0 for x in obstacle_dir)
         if all_zeros:
             self.obstacle_flag = False
         else:
             self.obstacle_flag = True
-            self.recover_from_obstacle()
+            self.recover_from_obstacle(obstacle_dir)
             self.obstacle_flag = False
 
 
@@ -103,6 +105,10 @@ class PersonFollower:
 
     def depth_image_callback(self, data):
         # Frequency of /xtion/depth/image_raw topic = 30 Hz
+
+        # publish the recovering flag at 30 Hz
+        self.recovering_pub.publish(self.recovering)
+
         if self.follow_flag:
             try:
                 # Convert the depth image using the default passthrough encoding
@@ -128,6 +134,8 @@ class PersonFollower:
     
 
     def translate(self, vel):
+
+        rospy.loginfo("Translating")
         
         translate_duration = 2.0    # seconds
         start = rospy.get_time()
@@ -143,7 +151,9 @@ class PersonFollower:
 
     def rotate(self, angle):
 
-        turn_duration = 2.0                         # seconds
+        rospy.loginfo("Rotating")
+
+        turn_duration = 3.0                         # seconds
         buffer = 0.0           # seconds
         turn_rate = angle / turn_duration   # rad/s [clockwise]
 
@@ -158,31 +168,46 @@ class PersonFollower:
             diff = now-start
 
 
-    def recover_from_obstacle(self):
+    def recover_from_obstacle(self, obstacle_dir):
+        
+        # set to true at the start
+        self.recovering = True
 
         print("="*20)
         print("inside the recovery function")
         print("="*20)
 
+        print(obstacle_dir)
+        print("Obstacle flag = %s" % self.obstacle_flag)
+
         # rospy.sleep(3.0)
         
-        dir = self.obstacle_dir  # this is a list with at least 1 non-zero element
+        dir = obstacle_dir  # this is a list with at least 1 non-zero element
 
         # first check sides
         if dir[1] == 1:
             # rotate right
             self.rotate(-pi/8)
+            # self.translate(0.2)
         if dir[3] == 1:
             # rotate left
             self.rotate(pi/8)
+            # self.translate(0.2)
         
         # now, move linearly
         if dir[0] == 1:
             # move backwards
-            self.translate(-0.15)
-        if dir[3] == 1:
+            self.translate(-0.2)
+        if dir[2] == 1:
             # move forwards
-            self.translate(0.15)
+            self.translate(0.2)
+
+        print("="*20)
+        print("Finished --- the recovery function")
+        print("="*20)
+
+        # set to false when finished
+        self.recovering = False
 
 
 
@@ -245,7 +270,7 @@ class PersonFollower:
             # 1. There's no reported obstacles nearby from the collision_checker node
             # 2. The master file is allowing this to run
             if not self.obstacle_flag and self.follow_flag:
-                rospy.loginfo("All clear, sending base command now!")
+                rospy.loginfo("Flag = %s, All clear, sending base command now!" % self.obstacle_flag)
                 self.pub_cmd.publish(twist)
             # else:
             #     if self.obstacle_flag:
