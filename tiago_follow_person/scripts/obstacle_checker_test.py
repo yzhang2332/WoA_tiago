@@ -21,9 +21,13 @@ class ObstacleChecker:
         rospy.init_node('obstacle_checker', anonymous=True)
 
         self.recovering = False
-        self.check_col_dist = 0.9   # meters
+        self.check_col_dist = 1.0   # meters
+
+        self.received_initial_costmap = False
 
         rospy.Subscriber("/move_base/local_costmap/costmap", OccupancyGrid, self.costmap_callback)
+        rospy.Subscriber("/move_base/local_costmap/costmap_updates", OccupancyGrid, self.costmap_update_callback)
+
         # rospy.Subscriber("/move_base/local_costmap/costmap_updates", OccupancyGrid, self.callback)
         rospy.Subscriber("/recovering", Bool, self.recover_callback)
 
@@ -169,25 +173,25 @@ class ObstacleChecker:
     def costmap_update_callback(self, data):
 
         # resolution = data.info.resolution
-        resolution = 0.025    # m / px
-        width = data.info.width
-        height = data.info.height
-        origin = data.info.origin
+        # resolution = 0.025    # m / px
+        # width = data.info.width
+        # height = data.info.height
+        # origin = data.info.origin
 
-        origin_position = origin.position
-        q = origin.orientation
-        # print(q)
-        rot_euler = tf_conversions.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])
+        # origin_position = origin.position
+        # q = origin.orientation
+        # # print(q)
+        # rot_euler = tf_conversions.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])
         # print(rot_euler)
 
         # publish transformation of {local_costmap} in {odom}
-        self.publish_static_transformation('odom', 'local_costmap', origin_position, q)
+        self.publish_static_transformation('odom', 'local_costmap', self.origin_position, self.q)
         # print("Published static transform!")
 
         center_px = 79
 
         margin = self.check_col_dist             # in m
-        margin_px = round(margin / resolution)   # in pixels of the matrix
+        margin_px = round(margin / self.resolution)   # in pixels of the matrix
         window_width = margin_px * 2
         # print("margin_px = %d, window_width = %d" % (margin_px, window_width))
 
@@ -195,7 +199,7 @@ class ObstacleChecker:
 
         for grid_x in range(center_px - margin_px, center_px + margin_px):
             for grid_y in range(center_px - margin_px, center_px + margin_px):
-                index = grid_y * width + grid_x
+                index = grid_y * self.width + grid_x
                 # Check if the cell is occupied
                 if 0 <= index < len(data.data):
                     values.append(data.data[index])
@@ -233,7 +237,7 @@ class ObstacleChecker:
         ###### Publish the map to display in RViz ######
         filtered_map_trans = [margin, margin, 0.0]
         filtered_map_rot = [0.0, pi, pi/2]
-        filtered_map_msg = self.numpy_to_occupancy_grid_msg(rotated_img, filtered_map_trans, filtered_map_rot, resolution, "base_footprint")
+        filtered_map_msg = self.numpy_to_occupancy_grid_msg(rotated_img, filtered_map_trans, filtered_map_rot, self.resolution, "base_footprint")
         self.filtered_map_pub.publish(filtered_map_msg)
         rospy.loginfo("Published filtered costmap")
 
@@ -247,26 +251,39 @@ class ObstacleChecker:
     ###############################################################
     def costmap_callback(self, data):
 
-        # resolution = data.info.resolution
-        resolution = 0.025    # m / px
-        width = data.info.width
-        height = data.info.height
-        origin = data.info.origin
+        if self.received_initial_costmap:
+            return
+        
+        self.resolution = 0.025    # m / px
+        self.width = data.info.width
+        self.height = data.info.height
+        self.origin = data.info.origin
 
-        origin_position = origin.position
-        q = origin.orientation
+        self.origin_position = self.origin.position
+        self.q = self.origin.orientation
         # print(q)
-        rot_euler = tf_conversions.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])
+        self.rot_euler = tf_conversions.transformations.euler_from_quaternion([self.q.x, self.q.y, self.q.z, self.q.w])
+
+        # resolution = data.info.resolution
+        # resolution = 0.025    # m / px
+        # width = data.info.width
+        # height = data.info.height
+        # origin = data.info.origin
+
+        # origin_position = origin.position
+        # q = origin.orientation
+        # # print(q)
+        # rot_euler = tf_conversions.transformations.euler_from_quaternion([q.x, q.y, q.z, q.w])
         # print(rot_euler)
 
         # publish transformation of {local_costmap} in {odom}
-        self.publish_static_transformation('odom', 'local_costmap', origin_position, q)
+        self.publish_static_transformation('odom', 'local_costmap', self.origin_position, self.q)
         # print("Published static transform!")
 
         center_px = 79
 
         margin = self.check_col_dist             # in m
-        margin_px = round(margin / resolution)   # in pixels of the matrix
+        margin_px = round(margin / self.resolution)   # in pixels of the matrix
         window_width = margin_px * 2
         # print("margin_px = %d, window_width = %d" % (margin_px, window_width))
 
@@ -274,7 +291,7 @@ class ObstacleChecker:
 
         for grid_x in range(center_px - margin_px, center_px + margin_px):
             for grid_y in range(center_px - margin_px, center_px + margin_px):
-                index = grid_y * width + grid_x
+                index = grid_y * self.width + grid_x
                 # Check if the cell is occupied
                 if 0 <= index < len(data.data):
                     values.append(data.data[index])
@@ -312,7 +329,7 @@ class ObstacleChecker:
         ###### Publish the map to display in RViz ######
         filtered_map_trans = [margin, margin, 0.0]
         filtered_map_rot = [0.0, pi, pi/2]
-        filtered_map_msg = self.numpy_to_occupancy_grid_msg(rotated_img, filtered_map_trans, filtered_map_rot, resolution, "base_footprint")
+        filtered_map_msg = self.numpy_to_occupancy_grid_msg(rotated_img, filtered_map_trans, filtered_map_rot, self.resolution, "base_footprint")
         self.filtered_map_pub.publish(filtered_map_msg)
         rospy.loginfo("Published filtered costmap")
 
@@ -321,6 +338,8 @@ class ObstacleChecker:
         dir_msg = JointState()
         dir_msg.position = directions
         self.obstacle_dir_pub.publish(dir_msg)
+
+        self.received_initial_costmap = True
 
 
 

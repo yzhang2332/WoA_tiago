@@ -211,12 +211,29 @@ class VoiceRecognitionServer:
 
             else:
                 pass
+    
 
-            
+    def get_mic_array_index(self) -> int:
+        dev_list = sd.query_devices()  # This is a list of dictionaries
+        for dev in dev_list:
+            print(dev['name'])
+            if "Mic Array" in dev['name']:
+                return dev_list.index(dev)
+        return -1
+                
 
     def run(self):
         global categories, my_device_index
-        my_device_index = 6
+        # my_device_index = 6
+        
+        dev_id = self.get_mic_array_index()
+        if dev_id == -1:
+            print("Microphone not found!")
+            rospy.signal_shutdown("Sum Ting Wong!")
+        else:
+            print("Device found with id: %d" % dev_id)
+            my_device_index = dev_id
+
 
         # Calibrate threshold before recording
         self.calibrate_threshold(device_index=my_device_index)
