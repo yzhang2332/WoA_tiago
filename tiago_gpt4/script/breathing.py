@@ -23,7 +23,7 @@ from pal_interaction_msgs.msg import TtsAction, TtsGoal
 
 class BreathingExercise:
     def __init__(self):
-        rospy.init_node('breathing_exercise')
+        # rospy.init_node('breathing_exercise')
 
         # self.soundhandle = SoundClient()
 

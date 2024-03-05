@@ -12,8 +12,20 @@ from handover_snacks import GetSnack
 from strech_ball import CatchBall
 from def_actions import play_action
 from customized_gesture import FollowMe, ShowAround
-from tiago_nav.scripts.nav_function import NavigationClient
-from tiago_follow_person.scripts.half_turn import HalfTurn
+
+import sys
+sys.path.append("/home/pal/tiago_ws/src/woa_tiago/tiago_nav/scripts")
+# sys.path.append("/home/pal/tiago_ws/src/woa_tiago/tiago_follow_person/scripts")
+
+from nav_function import NavigationClient
+
+from half_turn import HalfTurn
+
+# from ....woa_tiago.tiago_nav.scripts.nav_function import NavigationClient
+
+# from tiago_nav.scripts.nav_function import NavigationClient
+
+# from tiago_follow_person.scripts.half_turn import HalfTurn
 
 from pal_interaction_msgs.msg import TtsAction, TtsGoal
 import actionlib
@@ -66,8 +78,9 @@ class GenerationFuncion():
                            }, 
                           {"role": "user", "content": 
                            f"{text}. \
-                           Note: Please response with proper natural language and provide a keyword after a * sign, without a period mark. \
+                           Note: Please response with proper natural language and provide a keyword after a * sign, without a period mark.\
                            The keyword should be choose from this list: [{keyword_list}]\
+                           If the keyword isn't 'no_action', keep the natural language response short.\
                             For example: Sure, come with me. *navigate_to_meeting_room_a\
                            "}],
             )
@@ -89,7 +102,7 @@ class GenerationFuncion():
                 if action_keyword == "breathing_exercise":
                     rospy.loginfo("Doing Breathing Exercises")
                     breathing = BreathingExercise()
-                    breathing.run()
+                    breathing.start_exercise()
                 elif action_keyword == "provide_snack":
                     rospy.loginfo("Doing Get a Snack")
                     snake = GetSnack()
@@ -127,7 +140,7 @@ class GenerationFuncion():
                 elif action_keyword == "navigate_to_kitchen":
                     rospy.loginfo("Show kitchen")
                     self.follow_me.run()
-                    self.navigation.run("two")
+                    self.navigation.run("one")
                     self.show_around.run()
                 else:
                     rospy.loginfo("Wrong keyword.")

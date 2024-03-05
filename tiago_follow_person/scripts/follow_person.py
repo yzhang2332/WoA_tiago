@@ -51,7 +51,7 @@ class PersonFollower:
 
         ### define constants ###
         self.max_dist = 1.3          # meters
-        self.min_dist = 1.2          # meters
+        self.min_dist = 1.1          # meters
         self.max_rot_diff = 50       # pixels
 
         self.forward = 0.35          # m/s
@@ -125,7 +125,8 @@ class PersonFollower:
                 self.depth_matrix = None
                 print(e)
         else:
-            rospy.loginfo("NO PERMISSION!")
+            # rospy.loginfo("NO PERMISSION!")
+            pass
 
 
     def get_twist(self, linear, angular):
@@ -215,7 +216,7 @@ class PersonFollower:
 
     def process_data(self):
 
-        if self.depth_matrix is not None and self.person_loc is not None:
+        if self.depth_matrix is not None and self.person_loc is not None and not self.obstacle_flag and self.follow_flag:
 
             #print('person_loc: x = {}, y = {}'.format(int(self.person_loc[0]), int(self.person_loc[1]))) 
             # self.person_depth = self.depth_matrix[int(self.person_loc[1]), int(self.person_loc[0])]
@@ -271,9 +272,9 @@ class PersonFollower:
             # 2 conditions to satisfy before sending base vel command
             # 1. There's no reported obstacles nearby from the collision_checker node
             # 2. The master file is allowing this to run
-            if not self.obstacle_flag and self.follow_flag:
-                rospy.loginfo("Flag = %s, All clear, sending base command now!" % self.obstacle_flag)
-                self.pub_cmd.publish(twist)
+            # if not self.obstacle_flag and self.follow_flag:
+                # rospy.loginfo("Flag = %s, All clear, sending base command now!" % self.obstacle_flag)
+            self.pub_cmd.publish(twist)
             # else:
             #     if self.obstacle_flag:
             #         print("Obstacle detected!")

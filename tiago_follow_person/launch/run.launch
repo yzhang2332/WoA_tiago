@@ -3,7 +3,7 @@
 <launch>
 
   <!-- 3. Run the follow_person node -->
-  <node pkg="tiago_follow_person" type="obstacle_checker.py" name="obstacle_checker" output="screen"></node>
+  <!-- <node pkg="tiago_follow_person" type="obstacle_checker.py" name="obstacle_checker" output="screen"></node> -->
 
   <!-- 4. Run the find_person node -->
   <!-- <node pkg="tiago_follow_person" type="find_person.py" name="person_finder" output="screen"></node> -->

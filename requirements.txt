@@ -1,0 +1,7 @@
+openai
+soundfile
+sounddevice
+nltk
+testresources
+google-api-python-client
+flask

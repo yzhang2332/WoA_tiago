@@ -50,7 +50,7 @@ class PersonFinder:
             centers.append(center)
             areas.append(area)
         
-        self.print_info(num_person, centers, areas)
+        # self.print_info(num_person, centers, areas)
 
         # Publish pixel to track ONLY IF person is non zero
         if num_person > 0:
@@ -65,13 +65,13 @@ class PersonFinder:
         msg = JointState()
         msg.position = [x, y, 1]
         self.tracking_point_pub.publish(msg)
-        rospy.loginfo("Sending pixel to track: x, y = %.3f, %.3f" % (x, y))
+        # rospy.loginfo("Sending pixel to track: x, y = %.3f, %.3f" % (x, y))
     
     def send_emtpy_msg(self) -> None:
         msg = JointState()
         msg.position = [0.0, 0.0, 0]
         self.tracking_point_pub.publish(msg)
-        rospy.loginfo("Sending empty message ...")
+        # rospy.loginfo("Sending empty message ...")
 
 
     ###### HELPERS ######

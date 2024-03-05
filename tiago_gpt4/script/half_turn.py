@@ -19,11 +19,12 @@ class HalfTurn:
         self.turn_rate = math.pi / self.turn_duration   # rad/s [clockwise]
 
         # self.start_timestamp = time()
-        self.start_timestamp = rospy.get_time()   # since epoch
+        # self.start_timestamp = rospy.get_time()   # since epoch
     
 
     def run(self):
         
+        self.start_timestamp = rospy.get_time()
         now = rospy.get_time()
         diff = now-self.start_timestamp
         while diff < self.turn_duration + self.buffer:
@@ -34,14 +35,10 @@ class HalfTurn:
             now = rospy.get_time()
             diff = now-self.start_timestamp
             print(diff)
+    
 
-
- 
-def main():
+if __name__ == '__main__':
     rospy.init_node('half_turn', anonymous=True)
     turner = HalfTurn()
     turner.run()
-
-if __name__ == '__main__':
-    main()
     

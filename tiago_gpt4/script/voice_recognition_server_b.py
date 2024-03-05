@@ -216,7 +216,7 @@ class VoiceRecognitionServer:
 
     def run(self):
         global categories, my_device_index
-        my_device_index = 7
+        my_device_index = 6
 
         # Calibrate threshold before recording
         self.calibrate_threshold(device_index=my_device_index)
