@@ -49,19 +49,21 @@ class NavigationClient:
     ##################################################
     def vel_callback(self, msg):
         # print("received message")
-        self.reached_goal = False
-        self.msg_count += 1
+        # self.reached_goal = False
+        # self.msg_count += 1
         
-        if self.vel_is_zero(msg):
-            print("Msg #%d is zero!" % self.msg_count)
+        # if self.vel_is_zero(msg):
+        #     print("Msg #%d is zero!" % self.msg_count)
 
-        if self.msg_count > self.msg_thres:
-            # have ignored the first 10 messages, start checking for 2 consecutive zero Twist messages now
-            self.this_zero = self.vel_is_zero(msg)
-            if self.last_zero or self.this_zero:
-                self.reached_goal = True
-            else:
-                self.last_zero = self.this_zero
+        # if self.msg_count > self.msg_thres:
+        #     # have ignored the first 10 messages, start checking for 2 consecutive zero Twist messages now
+        #     self.this_zero = self.vel_is_zero(msg)
+        #     if self.last_zero and self.this_zero:
+        #         self.reached_goal = True
+        #     else:
+        #         self.last_zero = self.this_zero
+    
+        self.latest_nav_msg_time = rospy.get_time()
 
 
     ##################################################
@@ -111,6 +113,7 @@ class NavigationClient:
     def run(self, poi_name):
 
         self.msg_count = 0
+        self.latest_nav_msg_time = rospy.get_time()
 
         # send goal (only if not already at it)
         if self.current_poi != poi_name:
@@ -121,6 +124,9 @@ class NavigationClient:
             while not self.reached_goal:
                 # rospy.loginfo("Waiting for Tiago to reach the Navigation goal ...")
                 rospy.sleep(0.1)
+                if (rospy.get_time() - self.latest_nav_msg_time) > 1.0:
+                    rospy.loginfo("Reached goal")
+                    break
         
             rospy.loginfo("Reached goal!!!")
             self.current_poi = poi_name
@@ -140,7 +146,7 @@ class NavigationClient:
 if __name__ == '__main__':
     try:
         rospy.init_node('navigation_function', anonymous=True)
-        Nav = NavigationClient("one")
+        Nav = NavigationClient("ux_start")
         # rospy.spin()
         # Nav.run()
     except rospy.ROSInterruptException:

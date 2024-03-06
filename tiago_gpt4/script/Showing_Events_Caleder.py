@@ -59,6 +59,8 @@ def Showing_Events_Calender():
     events_result = service.events().list(calendarId='primary', timeMin=start_of_day.isoformat(),
                                           timeMax=end_of_day.isoformat(), singleEvents=True,
                                           orderBy='startTime').execute()
+    # print(events_result)
+    
     events = events_result.get('items', [])
     #print(events)
 
@@ -85,8 +87,11 @@ def Showing_Events_Calender():
             
             formatted_time_range = f"From {start_time_formatted} to {end_time_formatted}"
 
+            # print(event)
+
             if 'location' in event:
                 Location = event['location']
+                # print(Location)
             else:
                 Location = "a not specified location"
 

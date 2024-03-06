@@ -37,6 +37,7 @@ config_path = os.path.join(current_dir, '..', 'config', 'gpt_api.yaml')  # Navig
 with open(config_path, 'r') as file:
     config = yaml.safe_load(file)
 openai.api_key = config['api_key']
+snake_flag = True
 
 class GenerationFuncion():
     def __init__(self):
@@ -64,6 +65,7 @@ class GenerationFuncion():
         self.tts_client.send_goal_and_wait(goal)
     
     def process_with_gpt4(self, text):
+        global snake_flag
         try:
             rospy.loginfo("Start generate by gpt")
             keyword_list= ['no_action', 'stress_ball', 'breathing_exercise', 'provide_snack', 'schedule_meeting', 'navigate_to_meeting_room_A', 'navigate_to_meeting_room_B', 'navigate_to_kitchen', 'say_hi_wave_hand']
@@ -79,9 +81,11 @@ class GenerationFuncion():
                           {"role": "user", "content": 
                            f"{text}. \
                            Note: Please response with proper natural language and provide a keyword after a * sign, without a period mark.\
-                           The keyword should be choostexte from this list: [{keyword_list}]\
-                           If the keyword isn't 'no_action', keep the natural language response short.\
-                            For example: Sure, come with me. *navigate_to_meeting_room_a\
+                           The keyword should be choostexte from this keyword list: [{keyword_list}]\
+                           If the keyword is 'no_action', please give some natural response. Sometimes you can propose to do an action from the keyword list, but still put no_action after the * sign.\
+                           If the keyword isn't 'no_action', only propose to do the action, don't introduce the detail of the action in the natural language response.\
+                           For example: Sure, come with me. *navigate_to_meeting_room_a\
+                           Another example: I can help you to relax, let's do a breathing exercise. *breathing_exercise\
                            "}],
             )
             rospy.loginfo("GPT responsed")
@@ -104,9 +108,15 @@ class GenerationFuncion():
                     breathing = BreathingExercise()
                     breathing.start_exercise()
                 elif action_keyword == "provide_snack":
-                    rospy.loginfo("Doing Get a Snack")
-                    snake = GetSnack()
-                    snake.run()
+                    if snake_flag == True:
+                        rospy.loginfo("Doing Get a Snack")
+                        snake = GetSnack()
+                        snake.run()
+                        snake_flag = False
+                    else:
+                        rospy.loginfo("No more snakes")
+                        text = "I'm sorry. There's no more snake. I can bring you more next time."
+                        self.tts(text)
                 elif action_keyword == "stress_ball":
                     rospy.loginfo("Doing Stress Ball")
                     ball = CatchBall()

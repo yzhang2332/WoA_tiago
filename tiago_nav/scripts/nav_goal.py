@@ -24,6 +24,7 @@ def string_publisher():
 
 if __name__ == '__main__':
     try:
+        # rospy.init_node("navigation_goal", anonymous=True)
         string_publisher()
     except rospy.ROSInterruptException:
         pass

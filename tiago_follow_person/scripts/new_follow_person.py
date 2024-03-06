@@ -138,11 +138,11 @@ class PersonFollower:
 
     def zero_linear_vel(self, dir, vel: Twist):
 
-        print("="*20)
-        print("inside the zero_linear_vel function")
-        print("="*20)
+        # print("="*20)
+        # print("inside the zero_linear_vel function")
+        # print("="*20)
 
-        print(dir)
+        # print(dir)
         # print("Obstacle flag = %s" % self.obstacle_flag)
 
         # case 1: obstacle in front -> zero any non-zero forward velocity
@@ -153,9 +153,9 @@ class PersonFollower:
         if (dir[2] == 1 and vel.linear.x < 0.0):
             vel.linear.x = 0.0
 
-        print("="*20)
-        print("Finished --- the zero_linear_vel function")
-        print("="*20)
+        # print("="*20)
+        # print("Finished --- the zero_linear_vel function")
+        # print("="*20)
 
         return vel
 

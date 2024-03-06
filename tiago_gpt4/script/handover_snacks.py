@@ -55,7 +55,7 @@ class GetSnack:
 
     def adjust_height(self, target_height):
         rate = rospy.Rate(10)
-        duration = 6.0  # Duration for height adjustment
+        duration = 1.5  # Duration for height adjustment
 
         traj = JointTrajectory()
         traj.joint_names = ["torso_lift_joint"]
@@ -162,9 +162,9 @@ class GetSnack:
             self.adjust_height(0.296)
             strech_joint_angles = [0.21, 0.19, -0.2, 1.32, -1.57, 1.37, 0.0]
             text = "Relax time now. Let's have some snacks."
-            self.speak_and_move(text, strech_joint_angles, 6)
+            self.speak_and_move(text, strech_joint_angles, 4)
 
-            time.sleep(2)
+            time.sleep(0.5)
             # Open 
             width_open = [0.2, 0.2]
             self.move_gripper(width_open, 1)  # Replace with actual width needed to grasp the box
@@ -172,25 +172,28 @@ class GetSnack:
             # self.move_arm(strech_joint_angles, 6)
             # Move arm to pick position
             pre_grasp_angles = [0.116, -0.42,-0.0163, 1.367, -1.436, 0.775, 0.003]
-            self.move_arm(pre_grasp_angles, 6)
+            self.move_arm(pre_grasp_angles, 3)
             rospy.sleep(0.5)
 
             pick_joint_angles = [0.116, -0.635,-0.0163, 1.367, -1.436, 0.775, 0.003] 
             self.move_arm(pick_joint_angles, 1)
             # Close gripper to grasp the box
-            width_close = [0.044, 0.044]
+            # width_close = [0.044, 0.044]
             width_close = [0.02, 0.02]
             self.move_gripper(width_close, 1)
             
             # Move arm to handover position
             # self.move_arm(strech_joint_angles, 6)
+
+            self.adjust_height(0.35)
             
             offer_angles = [0.44, -0.63, -1.88, 1.37, -1.12, -0.7, 0.41]
             text = "Here you go. They are all yours. One chocolate a day keeps the doctor away."
-            self.speak_and_move(text, offer_angles, 6)
+            self.speak_and_move(text, offer_angles, 5)
             # self.move_arm(offer_angles, 6)
 
             time.sleep(5)
+            self.adjust_height(0.296)
             back_angles = [0.116, -0.34,-0.0163, 1.71, -1.436, 0.775, 0.003]
             self.move_arm(back_angles, 4)
             rospy.sleep(0.5)
@@ -201,9 +204,11 @@ class GetSnack:
             # Open 
             width_open = [0.2, 0.2]
             self.move_gripper(width_open, 1)  # Replace with actual width needed to grasp the box
+
+            self.move_arm(pre_grasp_angles, 1)
             
             strech_joint_angles = [0.21, 0.19, -0.2, 1.32, -1.57, 1.37, 0.0]
-            self.move_arm(strech_joint_angles, 6)
+            self.move_arm(strech_joint_angles, 4)
 
             self.go_home_position()
 

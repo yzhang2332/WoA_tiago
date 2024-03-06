@@ -9,6 +9,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 from datetime import timezone
+from Showing_Events_Caleder import Showing_Events_Calender
 
 def create_event_calendar():
     # Function to round up time to the nearest hour
@@ -133,3 +134,6 @@ def create_event_calendar():
 
 if __name__ == '__main__':
     create_event_calendar()
+    schedule = Showing_Events_Calender()
+    # print(schedule)
+
