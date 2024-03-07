@@ -145,7 +145,7 @@ class NavigationClient:
 # If the python node is executed as main process (sourced directly)
 if __name__ == '__main__':
     try:
-        rospy.init_node('navigation_function', anonymous=True)
+        # rospy.init_node('navigation_function', anonymous=True)
         Nav = NavigationClient("ux_start")
         # rospy.spin()
         # Nav.run()

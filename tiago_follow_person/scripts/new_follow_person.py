@@ -211,11 +211,11 @@ class PersonFollower:
 
             
             # Run the set zero linear velocity function (will zero linear vel if obstacle exists in the dir list)
-            rospy.loginfo("Setting corresponding linear velocity to zero")
+            # rospy.loginfo("Setting corresponding linear velocity to zero")
             safe_twist_msg = self.zero_linear_vel(self.obstacle_dir, twist_msg)
 
             # if not self.obstacle_flag:
-            rospy.loginfo("Sending [SAFE] base command now!")
+            # rospy.loginfo("Sending [SAFE] base command now!")
             self.pub_cmd.publish(safe_twist_msg)
             # else:
             #     if self.obstacle_flag:

@@ -4,4 +4,5 @@ sounddevice
 nltk
 testresources
 google-api-python-client
+google-auth-oauthlib
 flask

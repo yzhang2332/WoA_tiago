@@ -1,5 +1,7 @@
 # TIAGo - Full Setup for HRI Competition
 
+This is a repository for The University of Melbourne's ("Wizards of Aus") entry into the [Office Assistant Robot Competition](https://hri2024c.web.app/hri2014rc2.html) at the [2024 HRI Conference](https://humanrobotinteraction.org/2024/) held in Boulder, Colorado. The robotic platform used in the competition is the [TIAGo mobile manipulator](https://pal-robotics.com/robots/tiago/) from PAL robotics. 
+
 ## Installation
 
 ### 1. Create a ROS workspace

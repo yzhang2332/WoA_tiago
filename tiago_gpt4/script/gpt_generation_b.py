@@ -42,7 +42,7 @@ snake_flag = True
 class GenerationFuncion():
     def __init__(self):
         # self.speak = TTSFunction()
-        self.navigation = NavigationClient("one")
+        self.navigation = NavigationClient("ux_start")
         self.follow_me = FollowMe()
         self.show_around = ShowAround()
         self.turn_around = HalfTurn()
@@ -68,7 +68,8 @@ class GenerationFuncion():
         global snake_flag
         try:
             rospy.loginfo("Start generate by gpt")
-            keyword_list= ['no_action', 'stress_ball', 'breathing_exercise', 'provide_snack', 'schedule_meeting', 'navigate_to_meeting_room_A', 'navigate_to_meeting_room_B', 'navigate_to_kitchen', 'say_hi_wave_hand']
+            # keyword_list= ['no_action', 'stress_ball', 'breathing_exercise', 'provide_snack', 'schedule_meeting', 'navigate_to_meeting_room_A', 'navigate_to_meeting_room_B', 'navigate_to_kitchen', 'say_hi_wave_hand']
+            keyword_list= ['no_action', 'stress_ball', 'breathing_exercise', 'provide_snack', 'schedule_meeting', 'navigate_to_meeting_room', 'navigate_to_kitchen', 'say_hi_wave_hand']
             gpt_response = openai.chat.completions.create(
                 model="gpt-4",  # Use the model identifier for GPT-4. Adjust if you're using a specific variant.
                 messages=[{"role": "system", "content": 
@@ -82,14 +83,14 @@ class GenerationFuncion():
                            f"{text}. \
                            Note: Please response with proper natural language and provide a keyword after a * sign, without a period mark.\
                            The keyword should be choostexte from this keyword list: [{keyword_list}]\
-                           If the keyword is 'no_action', please give some natural response. Sometimes you can propose to do an action from the keyword list, but still put no_action after the * sign.\
+                           If the keyword is 'no_action', please give some natural response.\
                            If the keyword isn't 'no_action', only propose to do the action, don't introduce the detail of the action in the natural language response.\
                            For example: Sure, come with me. *navigate_to_meeting_room_a\
                            Another example: I can help you to relax, let's do a breathing exercise. *breathing_exercise\
                            "}],
             )
             rospy.loginfo("GPT responsed")
-        
+            # Sometimes you can propose to do an action from the keyword list, but still put no_action after the * sign.
 
             gpt_response = gpt_response.choices[0].message.content
             rospy.loginfo("GPT responsed")
@@ -115,7 +116,7 @@ class GenerationFuncion():
                         snake_flag = False
                     else:
                         rospy.loginfo("No more snakes")
-                        text = "I'm sorry. There's no more snake. I can bring you more next time."
+                        text = "I'm sorry. There's no more snack. I can bring you more next time."
                         self.tts(text)
                 elif action_keyword == "stress_ball":
                     rospy.loginfo("Doing Stress Ball")
@@ -134,25 +135,32 @@ class GenerationFuncion():
                     rospy.loginfo(schedule)
                     self.tts(schedule)
                     # self.speak.text_to_speech(schedule, 1.2)
-
-                elif action_keyword == "navigate_to_meeting_room_A":
-                    rospy.loginfo("Show meeting room A")
+                
+                elif action_keyword == "navigate_to_meeting_room":
+                    rospy.loginfo("Show meeting room")
                     self.follow_me.run()
-                    self.navigation.run("two")
-                    text = "This is the meeting room A. You can have a meeting here."
+                    self.navigation.run("ux_room_a_inside")
+                    text = "This is the meeting room. You can have a meeting here."
                     self.show_around.run(text)
 
-                elif action_keyword == "navigate_to_meeting_room_B":
-                    rospy.loginfo("Show meeting room B")
-                    self.follow_me.run()
-                    self.navigation.run("two")
-                    text = "This is the meeting room B. You can have a meeting here."
-                    self.show_around.run(text)
+                # elif action_keyword == "navigate_to_meeting_room_A":
+                #     rospy.loginfo("Show meeting room A")
+                #     self.follow_me.run()
+                #     self.navigation.run("ux_room_a_inside")
+                #     text = "This is the meeting room A. You can have a meeting here."
+                #     self.show_around.run(text)
+
+                # elif action_keyword == "navigate_to_meeting_room_B":
+                #     rospy.loginfo("Show meeting room B")
+                #     self.follow_me.run()
+                #     self.navigation.run("ux_room_b_inside")
+                #     text = "This is the meeting room B. You can have a meeting here."
+                #     self.show_around.run(text)
 
                 elif action_keyword == "navigate_to_kitchen":
                     rospy.loginfo("Show kitchen")
                     self.follow_me.run()
-                    self.navigation.run("one")
+                    self.navigation.run("ux_kitchen")
                     text = "This is the kitchen. Help yourself to a cup of coffee."
                     self.show_around.run(text)
                 else:
