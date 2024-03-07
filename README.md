@@ -1,43 +1,49 @@
-# TIAGo tutorials (Noetic)
+# TIAGo - Full Setup for HRI Competition
 
-This package contains the Noetic Dockerfile and Packages for TIAGo
+## Installation
 
-**Important Note: This Dockerfile is meant to be used to explore the functionalities of PAL Robotics TIAGo, it is not meant for development on the real robots since more functionalities are available in the dockers provided to customers when purchasing a robot.**
-
-To use this Docker you can either:
-
-- Build it locally with the latest version of all our packages
-
-or
-
-- Pull the already build image from DockerHub
-
-## Building your docker locally
-
-```
-cd tiago_tutorials
-
-docker build --no-cache -t tiago_tutorials_docker .
-```
-## Pulling Image
-
-The image can be pulled from [DockeHub](https://hub.docker.com/r/palroboticssl/tiago_tutorials) : 
-
-```
-docker pull palroboticssl/tiago_tutorials:noetic
-```
-or
-```
-docker pull palroboticssl/tiago_tutorials:melodic
+### 1. Create a ROS workspace
+```shell script
+mkdir -p ~/tiago_ws/src
 ```
 
-## Tutorials
+### 2. Clone the Git repository
+```shell script
+cd ~/tiago_ws/src/
+git clone --recurse-submodules https://github.com/yzhang2332/woa_tiago.git
+```
 
-* TIAGo: [http://wiki.ros.org/action/info/Robots/TIAGo/Tutorials](http://wiki.ros.org/action/info/Robots/TIAGo/Tutorials)
+### 3. Installing the required packages from apt
+```shell script
+sudo apt-get install libportaudio2 python3-pip net-tools cmatrix
+```
 
-## Git Repo & Bugtracker
+### 4. Install requirements for YOLOv8 (Ultralytics) forked repo
+To install the required Python libraries:
+```shell script
+cd ~/tiago_ws/src/woa_tiago/ultralytics_ros/
+python3 -m pip install -r requirements.txt
+```
+Then, install the ROS dependencies:
+```shell script
+cd ~/tiago_ws/
+rosdep install -r -y -i --from-paths .
+```
 
-If issues are encountered during those tutorials please open an issue on the appropriate repository.
+### 5. Installing the required Python libraries
+```shell script
+cd ~/tiago_ws/src/woa_tiago/
+pip install -r requirements.txt
+```
+NOTE: The above might output an error - `ERROR: flask 3.0.2 has requirement click>=8.1.3, but you'll have click 7.0 which is incompatible.`
+If so, simply execute the following in the terminal:
+```shell script
+pip install flask
+```
 
-* **Repository**: [https://github.com/pal-robotics/tiago_tutorials](https://github.com/pal-robotics/tiago_tutorials)
-* **Bugtracker**: [https://github.com/pal-robotics/tiago_tutorials/issues](https://github.com/pal-robotics/tiago_tutorials/issues)
+### 6. Building the packages
+```shell script
+cd ~/tiago_ws/
+catkin build detection_msgs tiago_follow_person tiago_gpt4 tiago_nav ultralytics_ros
+```
+
