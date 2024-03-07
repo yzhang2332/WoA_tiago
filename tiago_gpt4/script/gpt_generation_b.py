@@ -38,6 +38,9 @@ with open(config_path, 'r') as file:
     config = yaml.safe_load(file)
 openai.api_key = config['api_key']
 snake_flag = True
+ball_flag = True
+breathing_flag = True
+schedule_flag = True
 
 class GenerationFuncion():
     def __init__(self):
@@ -65,7 +68,7 @@ class GenerationFuncion():
         self.tts_client.send_goal_and_wait(goal)
     
     def process_with_gpt4(self, text):
-        global snake_flag
+        global snake_flag, ball_flag, breathing_flag, schedule_flag
         try:
             rospy.loginfo("Start generate by gpt")
             # keyword_list= ['no_action', 'stress_ball', 'breathing_exercise', 'provide_snack', 'schedule_meeting', 'navigate_to_meeting_room_A', 'navigate_to_meeting_room_B', 'navigate_to_kitchen', 'say_hi_wave_hand']
@@ -105,9 +108,16 @@ class GenerationFuncion():
                 self.follow_person_pub.publish(self.bool_msg)
 
                 if action_keyword == "breathing_exercise":
-                    rospy.loginfo("Doing Breathing Exercises")
-                    breathing = BreathingExercise()
-                    breathing.start_exercise()
+                    if breathing_flag == True:
+                        rospy.loginfo("Doing Breathing Exercises")
+                        breathing = BreathingExercise()
+                        breathing.start_exercise()
+                        breathing_flag = False
+                    else:
+                        rospy.loginfo("no more breathing")
+                        text = "But we had enough breathing exercise, aren't we?"
+                        self.tts(text)
+
                 elif action_keyword == "provide_snack":
                     if snake_flag == True:
                         rospy.loginfo("Doing Get a Snack")
@@ -118,23 +128,40 @@ class GenerationFuncion():
                         rospy.loginfo("No more snakes")
                         text = "I'm sorry. There's no more snack. I can bring you more next time."
                         self.tts(text)
+
                 elif action_keyword == "stress_ball":
-                    rospy.loginfo("Doing Stress Ball")
-                    ball = CatchBall()
-                    ball.run()
+                    if ball_flag ==True:
+                        rospy.loginfo("Doing Stress Ball")
+                        ball = CatchBall()
+                        ball.run()
+                        ball_flag = False
+                    else:
+                        rospy.loginfo("no more ball")
+                        text = "Oh, the stress ball is already in your hand"
+                        self.tts(text)
+
                 elif action_keyword == "say_hi_wave_hand":
                     rospy.loginfo("Doing a wave")
                     play_action('wave')
                     play_action('home')
+
                 elif action_keyword == "schedule_meeting":
-                    rospy.loginfo("Doing schedule a meeting")
-                    self.turn_around.run()
-                    create_event_calendar()
-                    self.turn_around.run()
-                    schedule = Showing_Events_Calender()
-                    rospy.loginfo(schedule)
-                    self.tts(schedule)
-                    # self.speak.text_to_speech(schedule, 1.2)
+                    if schedule_flag == True:
+                        rospy.loginfo("Doing schedule a meeting")
+                        self.turn_around.run()
+                        create_event_calendar()
+                        self.turn_around.run()
+                        schedule = Showing_Events_Calender()
+                        rospy.loginfo(schedule)
+                        self.tts(schedule)
+                        # self.speak.text_to_speech(schedule, 1.2)
+                        schedule_flag = False
+
+                    else:
+                        rospy.loginfo("no more schedule")
+                        text = "But, relax. You had enough meeting today."
+                        self.tts(text)
+
                 
                 elif action_keyword == "navigate_to_meeting_room":
                     rospy.loginfo("Show meeting room")

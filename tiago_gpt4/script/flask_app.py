@@ -36,7 +36,10 @@ __all__ = ['run_app_in_thread', 'set_signal_flag']
 
 
 if __name__ == '__main__':
+    # while True:
+    #     run_app_in_thread()
+    #     set_signal_flag(True)
     run_app_in_thread()
-    set_signal_flag(False)
+    set_signal_flag(True)
     # app = create_flask_app(True)
     # app.run(host='0.0.0.0', port=5000, debug=True, use_reloader=False)  # Prevent Flask from starting the app twice
