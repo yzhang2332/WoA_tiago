@@ -1,6 +1,6 @@
 # TIAGo - Full Setup for HRI Competition
 
-This is a repository for The University of Melbourne's ("Wizards of Aus") entry into the [Office Assistant Robot Competition](https://hri2024c.web.app/hri2014rc2.html) at the [2024 HRI Conference](https://humanrobotinteraction.org/2024/) held in Boulder, Colorado. The robotic platform used in the competition is the [TIAGo mobile manipulator](https://pal-robotics.com/robots/tiago/) from PAL robotics. 
+This is the repository for The University of Melbourne's ("Wizards of Aus") entry into the [Office Assistant Robot Competition](https://hri2024c.web.app/hri2014rc2.html) at the [2024 HRI Conference](https://humanrobotinteraction.org/2024/) held in Boulder, Colorado. The robotic platform used in the competition is the [TIAGo mobile manipulator](https://pal-robotics.com/robots/tiago/) from PAL robotics. 
 
 ## Installation
 
@@ -41,6 +41,16 @@ NOTE: The above might output an error - `ERROR: flask 3.0.2 has requirement clic
 If so, simply execute the following in the terminal:
 ```shell script
 pip install flask
+```
+
+### 6. Add your own GPT API key
+```shell script
+cd ~/tiago_ws/src/woa_tiago/tiago_gpt4/
+mkdir config && cd config
+```
+Then, in the root of the `/config` folder, create a new file called `gpt_api.yaml`, and paste your API in the file, in the format of:
+```yaml
+api_key: "YOUR_API_KEY"
 ```
 
 ### 6. Building the packages
