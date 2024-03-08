@@ -4,7 +4,7 @@ This is the repository for The University of Melbourne's ("Wizards of Aus") entr
 
 ## Installation
 
-### 1. Create a ROS workspace
+### 1. Create a ROS workspace called `tiago_ws`
 ```shell script
 mkdir -p ~/tiago_ws/src
 ```
@@ -17,6 +17,7 @@ git clone --recurse-submodules https://github.com/yzhang2332/woa_tiago.git
 
 ### 3. Installing the required packages from apt
 ```shell script
+sudo apt-get update
 sudo apt-get install libportaudio2 python3-pip net-tools cmatrix
 ```
 
@@ -47,8 +48,10 @@ pip install flask
 ```shell script
 cd ~/tiago_ws/src/woa_tiago/tiago_gpt4/
 mkdir config && cd config
+touch gpt_api.yaml
+gedit gpt_api.yaml
 ```
-Then, in the root of the `/config` folder, create a new file called `gpt_api.yaml`, and paste your API in the file, in the format of:
+Paste your API into the file, in the format of:
 ```yaml
 api_key: "YOUR_API_KEY"
 ```
@@ -59,3 +62,45 @@ cd ~/tiago_ws/
 catkin build detection_msgs tiago_follow_person tiago_gpt4 tiago_nav ultralytics_ros
 ```
 
+
+## Connect and Run
+
+### 1. Connect to the TIAGo via Ethernet
+Using Ethernet connection is preferred, especially if we want to subscribe to image topics (e.g. RGB or depth images) which are published at 30Hz.
+
+After connecting successfully using Ethernet, in the terminal run:
+```shell script
+ifconfig
+```
+Find the corresponding connection with name starting with “enp0”, and copy the ip address after “inet”. 
+
+### 2. Setup the `.bashrc` file
+Open the `.bashrc` file:
+```shell script
+cd
+gedit .bashrc
+```
+and add the following (below the `source init_pal_env.sh` line):
+```shell script
+source /home/pal/tiago_ws/devel/setup.bash
+
+export ROS_MASTER_URI=http://tiago-196c:11311
+# HERE, USE THE PREVIOUSLY COPIED IP ADDRESS
+# example: export ROS_IP=10.68.0.128
+export ROS_IP=<your_ip_address>
+
+alias map='rviz rviz -d /home/pal/tiago_ws/src/woa_tiago/rviz_configs/map.rviz'
+alias cmap='rviz rviz -d /home/pal/tiago_ws/src/woa_tiago/rviz_configs/local_costmap.rviz'
+alias fmap='rviz rviz -d /home/pal/tiago_ws/src/woa_tiago/rviz_configs/filtered_map.rviz'
+```
+
+### 3. Running
+Make sure:
+- The microphone is connect to the developemnt laptop
+- The robot is connect to the laptop via Etheret
+
+Then, in a new terminal, run the main launch file:
+```shell script
+source ~/.bashrc
+roslaunch tiago_gpt4 hri_competition.launch
+```
