@@ -96,10 +96,10 @@ alias fmap='rviz rviz -d /home/pal/tiago_ws/src/woa_tiago/rviz_configs/filtered_
 
 ### 3. Running
 Make sure:
-- The microphone is connect to the developemnt laptop
-- The robot is connect to the laptop via Etheret
+- The microphone is connected to the developemnt laptop
+- The robot is connected to the laptop via Etheret
 
-Then, in a new terminal, run the main launch file:
+Then, in a new terminal, source the setup and run the main launch file:
 ```shell script
 source ~/.bashrc
 roslaunch tiago_gpt4 hri_competition.launch
