@@ -49,7 +49,8 @@ class VoiceRecognitionServer:
         self.subscriber = rospy.Subscriber('/tiago/conversation_cont', String, self.flag_callback)
 
         # Audio recording parameters
-        self.sample_rate = 16000 # 16000 44100
+        # self.sample_rate = 16000 # 16000 44100
+        self.sample_rate = 16000 # 16000 44100 48000
         self.threshold = 3  # SilencTruee detection threshold
         self.silence_duration = 1  # Seconds of silence to consider the speaker has stopped
         self.stream = None
@@ -90,6 +91,7 @@ class VoiceRecognitionServer:
             self.threshold = np.max(rms) * 100
         else:
             self.threshold = 3  # set minimum threshold
+        # self.threshold = 4
         rospy.loginfo(f"Calibration complete. New threshold: {self.threshold}")
 
 
