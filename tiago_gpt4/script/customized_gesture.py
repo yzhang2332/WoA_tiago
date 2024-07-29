@@ -14,6 +14,8 @@ from play_motion_msgs.msg import PlayMotionAction, PlayMotionGoal
 
 from pal_interaction_msgs.msg import TtsAction, TtsGoal
 
+import numpy as np
+
 class ShowAround:
     def __init__(self):
         # Publisher for controlling Tiago's torso height
@@ -149,20 +151,35 @@ class ShowAround:
         
         # Open 
         width_open = [0.04, 0.04]
-        self.move_gripper(width_open, 0.5) 
+        self.move_gripper(width_open, 1.0) 
 
         # Arm go left
         left_joint_angles = [2.119355530845695, -1.2343393346546196, -2.9805722141531548, 1.9749106294310392, 1.5930857512282965, 0.204939238789771118, 1.2762728866684454]
-        self.move_arm(left_joint_angles, 2)
+        self.move_arm(left_joint_angles, 4)
         if text is not None:
             self.tts(text)
 
         right_joint_angles = [0.3410800549218427, -0.9574367897467364, -3.2205973717717713, 1.6951855224344599, 1.5293958969935455, 0.26235607404607875, 1.2431700210140577]
-        self.move_arm(right_joint_angles, 2)
+        self.move_arm(right_joint_angles, 4)
         rospy.loginfo("finish gesture")
 
         self.go_home_position()
     
+
+################# COSINE INTERPOLATION HELPERS #################
+def cosine_interp_list(a, b, num_points):
+    lst = []
+    for i in range(len(a)):
+        lst.append(cosine_interp_vals(a[i], b[i], num_points))
+    return lst
+
+def cosine_interp_vals(a, b, num_points):
+    t = np.linspace(0, 1, num_points)
+    # Transform t to the cosine space
+    t = (1 - np.cos(t * np.pi)) / 2
+    return [(1-tt) * a + tt * b for tt in t]
+
+
 class FollowMe():
     def __init__(self):
         # Publisher for controlling Tiago's torso height
@@ -302,15 +319,17 @@ class FollowMe():
         
         # Arm go open
         open_joint_angles = [1.4782811164506282, -1.29, -2.88, 2.16, 1.63, 0.52, 1.3]
-        self.move_arm(open_joint_angles, 1.5)
+        # self.move_arm(open_joint_angles, 1.5)
+        self.move_arm(open_joint_angles, 3.0)
 
         self.tts("follow me")
 
         close_joint_angles = [1.477, -1.27, -2.88, 2.34, 1.59, -1.31, 1.29]
-        self.move_arm(close_joint_angles, 0.5)
+        # self.move_arm(close_joint_angles, 0.5)
+        self.move_arm(close_joint_angles, 1.0)
 
-        self.move_arm(open_joint_angles, 0.5)
-        self.move_arm(close_joint_angles, 0.5)
+        self.move_arm(open_joint_angles, 1.0)
+        self.move_arm(close_joint_angles, 1.0)
         rospy.loginfo("finish gesture")
 
         self.go_home_position()

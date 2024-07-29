@@ -26,6 +26,8 @@ from pal_interaction_msgs.msg import TtsAction, TtsGoal
 import actionlib
 
 
+
+
 # Configure your OpenAI API key here
 current_dir = os.path.dirname(__file__)  # Gets the directory of the current script
 config_path = os.path.join(current_dir, '..', 'config', 'gpt_api.yaml')  # Navigate to the config.yaml file
@@ -56,6 +58,7 @@ class VoiceRecognitionServer:
         self.stream = None
         self.last_flag_timestamp = 0
         self.first_conversation = True
+        # self.first_conversation = False
         self.action_flag = False
         # self.speak = TTSFunction()
         # self.conv_break = False
@@ -161,7 +164,7 @@ class VoiceRecognitionServer:
     
     
     def recognize_speech_whisper(self):
-        global my_device_index    
+        global my_device_index, reminder_flag    
         text = None
         
         # Record audio until silence
@@ -268,6 +271,7 @@ class VoiceRecognitionServer:
                     continue
 
 if __name__ == '__main__':
+    # global reminder_flag
     vr_server = VoiceRecognitionServer()
     time_start = int(rospy.get_time())
     reminder_flag = False

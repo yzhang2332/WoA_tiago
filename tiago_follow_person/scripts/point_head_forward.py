@@ -20,7 +20,7 @@ def control_tiago_head():
     head_traj = JointTrajectory()
     head_traj.joint_names = ['head_1_joint', 'head_2_joint']  # Tiago has two head joints
     head_pan = math.radians(0) # left(+) right(-) motion
-    head_tilt = math.radians(0) #  up(+) down(-) motion
+    head_tilt = math.radians(10) #  up(+) down(-) motion
     # Define a trajectory point
     traj_point = JointTrajectoryPoint()
     traj_point.positions = [head_pan, head_tilt]  # Example position values for head joints

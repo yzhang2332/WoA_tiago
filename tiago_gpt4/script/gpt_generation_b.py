@@ -6,6 +6,8 @@ import openai
 import yaml
 import os
 from create_calendar import create_event_calendar
+from create_calendar2 import EventCalendarCreator
+
 from Showing_Events_Caleder import Showing_Events_Calender
 from breathing import BreathingExercise
 from handover_snacks import GetSnack
@@ -42,6 +44,8 @@ ball_flag = True
 breathing_flag = True
 schedule_flag = True
 
+
+
 class GenerationFuncion():
     def __init__(self):
         # self.speak = TTSFunction()
@@ -76,16 +80,13 @@ class GenerationFuncion():
             gpt_response = openai.chat.completions.create(
                 model="gpt-4",  # Use the model identifier for GPT-4. Adjust if you're using a specific variant.
                 messages=[{"role": "system", "content": 
-                           "You are a helpful office assistant robot. Your name is Tiago and you are Australian. You can assist office work and maintain a relax vibe. \
-                           Now you are tested in a robot competion fo a human-robot conference. \
-                           Info on Human-Robot-Interaction conference: 19th Annual ACM/IEEE International Conference on Human Robot Interaction (HRI). HRI 2024 is the 19th annual conference for basic and applied HRI research. Researchers from across the world present their best work to HRI to exchange ideas about the theory, technology, data, and science furthering the state-of-the-art in the field. The conference theme for HRI 2024 is 'HRI in the real world' and will focus on key HRI theories, designs, studies, systems, and technical advances that aim to bring HRI out of the lab and into everyday life. We encourage the community to consider what it means to do HRI in practice, and ways to bring it into the mainstream. The HRI 2024 conference is taking place in Boulder, Colorado, in the US.\
-                           Info on the robot competition: The interaction is taking place during the HRI 2024 Robot Competition. It is the first competition at the HRI conference and the task is to develop human-robot applications designed to provide invaluable assistance and companionship to workers in the office environment. The competition serves as a platform for participants to demonstrate the capabilities of their robots and to highlight the ways in which these intelligent machines can enhance the productivity and well-being of office professionals. Participants are invited to present their human-robot applications based on the Tiago Platform, each with its unique add-ons design, features, and functionalities. These robots should behave as humanly as possible, fostering a sense of familiarity and promoting natural interaction with humans. They should understand human emotions, displaying expressive facial features and gestures that enable effective communication and empathetic engagement.The person the robot is interacting with during the competition is from a jury. The jury will score the interaction. For instance: The robot’s Conversational Ability, i.e. How well does the robot engage in conversations with users? Does it understand and respond appropriately to user queries and requests? Is the conversation natural and fluid? Besides, the robot has to convey emotional intelligence, i.e. How well does the robot understand and respond to human emotions? Does it display empathy and provide emotional support when needed?\
-                           "
+                           "You are a helpful office assistant robot. Your name is Tiago and you are Australian. You can assist with office work and maintain a relaxed vibe. \
+                           Now in are in a real office environment that people are piloting with you as you're a new office assistant to them."
                            }, 
                           {"role": "user", "content": 
                            f"{text}. \
-                           Note: Please response with proper natural language and provide a keyword after a * sign, without a period mark.\
-                           The keyword should be choostexte from this keyword list: [{keyword_list}]\
+                           Note: Please respond with proper natural language and provide a keyword after a * sign, without a period mark.\
+                           The keyword should be chosen from this keyword list: [{keyword_list}]\
                            If the keyword is 'no_action', please give some natural response.\
                            If the keyword isn't 'no_action', only propose to do the action, don't introduce the detail of the action in the natural language response.\
                            For example: Sure, come with me. *navigate_to_meeting_room_a\
@@ -140,18 +141,21 @@ class GenerationFuncion():
                         text = "Oh, the stress ball is already in your hand"
                         self.tts(text)
 
-                elif action_keyword == "say_hi_wave_hand":
-                    rospy.loginfo("Doing a wave")
-                    play_action('wave')
-                    play_action('home')
+                # elif action_keyword == "say_hi_wave_hand":
+                #     rospy.loginfo("Doing a wave")
+                #     play_action('wave')
+                #     play_action('home')
 
                 elif action_keyword == "schedule_meeting":
                     if schedule_flag == True:
                         rospy.loginfo("Doing schedule a meeting")
                         self.turn_around.run()
-                        create_event_calendar()
+                        # create_event_calendar()
+                        event_creator = EventCalendarCreator()
+                        # # event_creator.create_event_calendar()
                         self.turn_around.run()
-                        schedule = Showing_Events_Calender()
+                        schedule = event_creator.get_event_data()
+                        # schedule = Showing_Events_Calender()
                         rospy.loginfo(schedule)
                         self.tts(schedule)
                         # self.speak.text_to_speech(schedule, 1.2)
@@ -200,3 +204,7 @@ class GenerationFuncion():
         except Exception as e:
             rospy.logerr(f"Failed to process text with GPT-4: {e}")
             return "Error processing text with GPT-4."
+        
+
+# if __name__ == "__main__":
+#     gt = GenerationFuncion()

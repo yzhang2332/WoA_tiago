@@ -17,7 +17,7 @@ from strech_ball import CatchBall
 from def_actions import play_action
 # from text_to_speech_gpt4 import TTSFunction
 import time
-from create_calendar import create_event_calendar
+from create_calendar import EventCalendarCreator
 from Showing_Events_Caleder import Showing_Events_Calender
 from customized_gesture import FollowMe, ShowAround
 
@@ -246,8 +246,9 @@ class VoiceRecognitionServer:
 
                         elif found_categories[0] == "Schedule a Meeting":
                             rospy.loginfo("Doing schedule a meeting")
-                            create_event_calendar()
-                            schedule = Showing_Events_Calender()
+                            event_creator = EventCalendarCreator()
+                            schedule = event_creator.get_event_data()
+                            #schedule = Showing_Events_Calender()
                             rospy.loginfo(schedule)
                             # self.speak.text_to_speech(schedule, 1.2)
                             self.tts(schedule)

@@ -2,6 +2,7 @@
 
 from flask import Flask, send_file
 import threading
+import time
 
 app = Flask(__name__)
 
@@ -41,5 +42,10 @@ if __name__ == '__main__':
     #     set_signal_flag(True)
     run_app_in_thread()
     set_signal_flag(True)
+    time.sleep(5)
+    set_signal_flag(False)
+    time.sleep(5)
+    set_signal_flag(True)
+    time.sleep(5)
     # app = create_flask_app(True)
     # app.run(host='0.0.0.0', port=5000, debug=True, use_reloader=False)  # Prevent Flask from starting the app twice

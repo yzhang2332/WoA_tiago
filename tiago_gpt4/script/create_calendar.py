@@ -58,11 +58,8 @@ def create_event_calendar():
         with open('token.pickle', 'rb') as token:
             creds = pickle.load(token)
     if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file('/home/pal/tiago_ws/src/woa_tiago/tiago_gpt4/script/credentials1.json', SCOPES)
-            creds = flow.run_local_server(port=0)
+        flow = InstalledAppFlow.from_client_secrets_file('/home/pal/tiago_ws/src/woa_tiago/tiago_gpt4/script/credentials1.json', SCOPES)
+        creds = flow.run_local_server(port=0)
         with open('token.pickle', 'wb') as token:
             pickle.dump(creds, token)
     service = build('calendar', 'v3', credentials=creds)
@@ -128,6 +125,7 @@ def create_event_calendar():
     
     submit_button = tk.Button(center_frame, text="Create Event", command=create_event, font=large_font)
     submit_button.grid(row=7, column=0, columnspan=2)
+    
     
     window.mainloop()
 
